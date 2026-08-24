@@ -72,3 +72,16 @@ Each case below documents a real engineering decision behind this platform, foll
 | :--- | :--- | :--- | :---: |
 | **[Case 01](./cases/case-01-perimeter-and-edge-security.md)** | Perimeter Hardening & Zero-Trust Edge Security | Cloudflare WAF, WireGuard, UFW/iptables, SSH Hardening | 🟢 Published |
 | *More cases coming soon* | — | — | 🟡 Planned |
+
+---
+
+## Security Posture & Defense-in-Depth Matrix
+
+| Layer | Threat Vector | Implemented Defense & Controls | Validation Method |
+| :--- | :--- | :--- | :--- |
+| **Identity & Access** | SSH Password Brute-force & Credential Stuffing | Ed25519 keys exclusively, `PermitRootLogin no`, `PasswordAuthentication no`, `AllowUsers` whitelist | `ssh -o PreferredAuthentications=password` fails instantly without password prompt. |
+| **Network Perimeter** | Port Scanning & Direct Host Fingerprinting | Host firewall in **Default-DROP** mode. Port 22 blocked entirely from WAN; ports 80/443 restricted to Cloudflare CIDRs only. | Shodan & `nmap -Pn -p-` from a non-Cloudflare IP return zero open ports. |
+| **Administrative Plane** | Unencrypted remote management & rogue admin probes | **WireGuard Site-to-Client VPN**. SSH & internal tools bind exclusively to the VPN interface (`10.10.10.x`). | SSH connection rejected unless WireGuard tunnel (`wg0`) is active. |
+| **Edge / Web Ingress** | L7 DDoS, SQLi, Scrapers, Cloudflare Bypass | Cloudflare Proxy (Orange Cloud) + WAF rules + host firewall whitelist restricting 80/443 to Cloudflare CIDRs. | Direct `curl https://<VPS_IP>` times out/drops. Domain queries pass cleanly. |
+| **Application Layer** | Container breakout & lateral network movement | Non-root containers, read-only root filesystem where applicable, segmented Docker bridge networks (`internal_db` isolated from gateway). | Compromised web container cannot reach other tenants or the DB network's gateway. |
+| **Data & State** | Data loss & configuration drift | Atomic `/srv` directory mapping, named persistent volumes, snapshot baseline before changes. | Point-in-time rollback validated against snapshot baseline. |
