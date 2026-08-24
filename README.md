@@ -36,7 +36,7 @@ graph TD
         Grafana["Grafana Dashboards"]
     end
 
-    subgraph App_Platform["Docker Container Platform - `/srv`"]
+    subgraph App_Platform["Docker Container Platform - /srv"]
         Traefik["Traefik v3 Reverse Proxy - Strict TLS"]
         WebApp["Web Applications and APIs"]
         DB["Persistent Database - PostgreSQL and Redis"]
