@@ -61,3 +61,14 @@ graph TD
     Promtail -.->|Collect Logs| Loki
     Loki -->|VPN-Only Access| Grafana
 ```
+
+---
+
+## Production Engineering Cases (S.T.A.R. Format)
+
+Each case below documents a real engineering decision behind this platform, following the **Situation, Task, Action, Result** format, the goal is to show *what* was deployed, *why* specific trade-offs were made and how they were validated.
+
+| Case | Focus Area | Key Technologies | Status |
+| :--- | :--- | :--- | :---: |
+| **[Case 01](./cases/case-01-perimeter-and-edge-security.md)** | Perimeter Hardening & Zero-Trust Edge Security | Cloudflare WAF, WireGuard, UFW/iptables, SSH Hardening | 🟢 Published |
+| *More cases coming soon* | — | — | 🟡 Planned |
