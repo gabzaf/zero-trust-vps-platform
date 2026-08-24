@@ -61,6 +61,8 @@ I will need to copy the text inside the public key to paste into my provider's c
 cat ~/.ssh/my_key.pub
 ```
 
+---
+
 ### 2. System Base Configuration
 This section explains how to configure Linux OS base for secure and predictable administration before installing any stack.
 
@@ -204,4 +206,154 @@ After adding the records, my DNS in Cloudflare should have at least:
 | A    | @     | VPS IP       | DNS Only  | mysite.com             | Root domain          |
 | A    | srv01 | VPS IP       | DNS Only  | srv01.mysite.com       | Administration       |
 | A    | vpn   | VPS IP       | DNS Only  | vpn.mysite.com         | VPN connection       |
+
+---
+
+### 4. Admin Access Hardening (`/etc/ssh/sshd_config.d`)
+
+This configuration neutralizes the two primary attack surfaces in administrative access: a permissive SSH daemon and direct remote root execution.
+
+SSH is the server's administrative gateway. If this gateway is poorly protected, the rest of the infrastructure is irrelevant. Firewalls, VPNs and reverse proxies don't compensate for exposed administrative access.
+
+Automated attacks exploit exactly three recurring vulnerabilities:
+- remote login as root;
+- authentication via password exposed to the internet;
+- permissive or implicit configuration of sshd.
+
+```sshd_config
+# It only forces cryptographic keys; it prohibits passwords and interactivity
+AuthenticationMethods publickey
+PubkeyAuthentication yes
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+ChallengeResponseAuthentication no
+PermitEmptyPasswords no
+
+# Prohibit remote login as root, whether using a password or a key
+PermitRootLogin no
+
+# Restricts access exclusively to administrative users
+AllowUsers <username>
+
+# Ends idle sessions (5 minutes of inactivity)
+ClientAliveInterval 300
+ClientAliveCountMax 0
+
+# Disables unnecessary tunnels and redirects
+X11Forwarding no
+AllowTcpForwarding no
+AllowAgentForwarding no
+
+# Structured Audit Logging
+LogLevel VERBOSE
+```
+
+The `AuthenticationMethods publickey` blocks any authentication attempts by other means. `PasswordAuthentication no` blocks brute-force password attacks. `PermitRootLogin no` prevents remote login as root even with a valid key (for administrative tasks I use `<username>` with `sudo`).
+
+`AllowUsers <username>` restricts the daemon to accept connections only from the `<username>` user. `AllowTcpForwarding no` disables port forwarding via SSH, unnecessary because the VPN tunnel will cover this role.
+
+For other settings:
+- `PubkeyAuthentication yes`: Explicitly enforces allowing only key authentication.
+- `PermitEmptyPasswords no`: This ensures that accounts with empty passwords cannot authenticate, adding another layer of security.
+- `ChallengeResponseAuthentication no`: Disables the challenge-response authentication method, which can be susceptible to interception.
+- `AuthenticationMethods publickey`: Defines that the only allowed authentication method is via public key, ensuring that only users with the corresponding key can access the server.
+- `AllowUsers <username>`: This allows the user `<username>` to access the server. I can add other users to the list, separated by spaces.
+
+> [!IMPORTANT]
+> Never restart SSH without validating first and keep one SSH session open while testing another.
+
+**`sudo` Restriction**
+
+With root blocked via SSH and <username> user as the only access to the server, unrestricted sudo is the next step. <username> user has been in the `wheel` group (AlmaLinux) since its creation.
+
+This means that any command can be executed as root, or anything an attacker wants to run if they compromise the account.
+
+The principle adopted will be that <username> user only has standard access and I will subsequently grant exactly the permissions required. Nothing more.
+
+Before removing it from the group, I create a dedicated `sudoers` file for <username> user. If I remove it first, I lose the ability to execute any privileged commands.
+
+Log in directly as root.
+
+> [!WARNING]
+> From now on, I will be operating as root until I run `exit`. Use it only for specific administrative tasks that granular sudoers does not cover.
+```bash
+su -
+```
+Create and populate the `sudoers` file:
+```bash
+visudo -f /etc/sudoers.d/ops
+```
+```bash
+# Service management
+<username> ALL=(root) NOPASSWD: /usr/bin/systemctl
+
+# Log reading
+<username> ALL=(root) NOPASSWD: /usr/bin/journalctl
+
+# Package installation and updates
+# AlmaLinux
+<username> ALL=(root) NOPASSWD: /usr/bin/dnf
+```
+With these restrictions, the <username> user can manage services and install or update system packages.
+
+However, <username> user will not be able to modify system configurations that do not go through these binaries or execute any other arbitrary privileged command. Additional entries will be included as needed.
+
+Now, proceed to save and validate the syntax of the `/etc/sudoers.d/<username>` file:
+```bash
+visudo -cf /etc/sudoers.d/<username>
+```
+Expected output:
+```bash
+/etc/sudoers.d/ops: parsed OK
+```
+Confirm the actual account privilege inventory:
+```bash
+sudo -l -U ops
+```
+Expected output:
+```text
+User <username> may run the following commands:
+(root) NOPASSWD: /usr/bin/systemctl
+(root) NOPASSWD: /usr/bin/journalctl
+(root) NOPASSWD: /usr/bin/dnf
+```
+If anything appears beyond the entries I defined, investigate before continuing. Now remove <username> user from the unrestricted sudo group:
+```bash
+# AlmaLinux
+gpasswd -d ops wheel
+```
+Finally, end the `root` user session:
+```bash
+exit
+```
+Now, start a new SSH connection without any active root session:
+```bash
+ssh -i ~/.ssh/my_key <username>@srv01.mysite.com
+```
+Invalidate any residual authentication cache and confirm the lock:
+```bash
+sudo -k
+sudo whoami
+```
+
+**Adding entries to sudoers in the future**
+
+Whenever I have a requisition to a new privilege for <username> user, the flow is the same: log in as root via `su -`, edit the file, validate and exit.
+```bash
+su -
+visudo -f /etc/sudoers.d/ops
+visudo -cf /etc/sudoers.d/ops
+exit
+```
+
+**Expected end state**
+
+At this point:
+- only the <username> user accesses the server exclusively via SSH key;
+- no passwords travel over the network;
+- `root` is inaccessible remotely;
+- The scope of sudo is restricted to the minimum necessary for this phase, with controlled expansion as required;
+- SSH authentication logs are auditable.
+
+This eliminates the largest initial attack surface of Linux servers.
 
