@@ -32,6 +32,8 @@ graph TD
     subgraph Admin_Plane["Private Admin Plane - WireGuard 10.10.10.0/24"]
         SSH["Hardened OpenSSH - Ed25519, No Root"]
         Cockpit["Cockpit Web Admin and Telemetry"]
+        Netdata["Netdata Real-Time Metrics"]
+        Grafana["Grafana Dashboards"]
     end
 
     subgraph App_Platform["Docker Container Platform - /srv"]
@@ -40,7 +42,6 @@ graph TD
         DB["Persistent Database - PostgreSQL and Redis"]
         Promtail["Promtail Log Collector"]
         Loki["Grafana Loki Central Store"]
-        Grafana["Grafana Dashboards"]
     end
 
     User -->|HTTPS 443| CF_WAF
@@ -54,7 +55,9 @@ graph TD
     Admin -->|WireGuard Tunnel| FW_WG
     FW_WG --> SSH
     FW_WG --> Cockpit
+    FW_WG --> Netdata
+    FW_WG --> Grafana
 
     Promtail -.->|Collect Logs| Loki
-    Loki --> Grafana
+    Loki -->|VPN-Only Access| Grafana
 ```
