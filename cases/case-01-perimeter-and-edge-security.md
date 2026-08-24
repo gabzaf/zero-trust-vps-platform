@@ -58,7 +58,7 @@ The command will create two files in the `~/.ssh` folder:
 
 I will need to copy the text inside the public key to paste into my provider's control panel. Use the command below to display the text:
 ```bash
-cat ~/.ssh/my_specific_key.pub
+cat ~/.ssh/my_key.pub
 ```
 
 ### 2. System Base Configuration
@@ -150,4 +150,58 @@ A correctly configured domain is a technical prerequisite for:
 #### Domain Delegation to Cloudflare
 Cloudflare will act as my primary DNS zone, providing near-instant propagation and a foundation for future security. It will also serve as a central point for name management.
 
-a. DNS Operating Modes in Cloudflare
+a. **DNS Operating Modes in Cloudflare**
+
+In Cloudflare, each DNS record can operate in two modes:
+- DNS Only (gray cloud)
+	- Cloudflare only responds to DNS queries.
+	- Traffic goes directly to your VPS IP.
+- Proxied (orange cloud)
+	- Cloudflare intercepts HTTP/HTTPS traffic,
+	- Applies proxy, TLS, WAF, caching, etc.
+
+b. **Adding the domain to Cloudflare**
+
+With the domain registered, the next step is to use Cloudflare to manage the DNS. This involves adding the domain to a Cloudflare account and changing the nameservers at the registrar to point to Cloudflare.
+
+After accessing Cloudflare dashboard, I follow the steps below:
+
+1. Click on **Add Domain** in the Cloudflare dashboard. When prompted, enter the domain (just the base name, for example, mysite.com, without www).
+2. Select a Cloudflare plan. For my purpose, I choose the Free plan. It's sufficient for everything that I build.
+3. Cloudflare will then scan the domain's current DNS records and list what it finds. **Review the detected DNS records** and adjust if necessary. If the domain is new, there may only be default records or no records at all. The important thing is to proceed with the Cloudflare setup until I reach the nameservers screen.
+4. In the final step of adding the domain, Cloudflare will display two custom nameservers assigned to my domain (for example: `dana.ns.cloudflare.com` and `nick.ns.cloudflare.com`).
+5. Copy the two displayed nameservers and proceed to change the domain's nameservers in my registrar's control panel (where I purchased the domain) to the values ​​provided by Cloudflare. The process varies depending on the registrar where the domain was purchased, but the logic is the same across all:
+	a. Access the registrar's control panel,
+	b. Locate the domain's nameserver settings, and
+	c. Replace the existing values ​​with the two provided by Cloudflare.
+6. With the nameservers changed at the registrar, return to Cloudflare and click Done, check nameservers to start the verification.
+
+**DNS Propagation Time**
+
+After changing the nameservers at my registrar (where I purchased the domain), I need to wait for DNS propagation. That is, the nameserver information is updated on all DNS servers on the Internet.
+
+During propagation, my domain may not resolve correctly. Monitor the propagation directly from the terminal. To check if the nameservers are already pointing to Cloudflare:
+```bash
+dig NS mysite.com +short
+```
+The expected result is the two Cloudflare nameservers (e.g., `dana.ns.cloudflare.com`, `nick.ns.cloudflare.com`). As long as the old registrar nameservers are still shown, propagation is not yet complete.
+
+c. **DNS Configuration in Cloudflare**
+
+With the domain active in Cloudflare (nameservers propagated), all DNS management is now done in the Cloudflare control panel. Add the necessary DNS records to point the traffic to my server:
+1. In the **Cloudflare Dashboard**, select the domain and go to the **DNS > Records** tab. I will see a table to manage the domain's DNS records.
+2. **Create an A record** pointing the root domain to my VPS's IP address. To do this: click **Add Record**. Select **Type = A**. In **Name**, enter `@` (representing the root domain itself, `mysite.com`). In **IPv4 address**, enter the public IP address of my VPS server (e.g., `123.45.67.89`). The Proxy (Orange Cloud) should remain disabled. This ensures I am connecting directly to the VPS's IP address, facilitating SSL certificate issuance and latency testing. Change to DNS Only (Gray Cloud ☁️).
+3. **Create another A record** pointing the subdomain `srv01` to the VPS's IP address. Click Add Record again. Select **Type = A**. In Name, enter `srv01`. In the **IPv4 address field**, enter the public IP address of the server. Change to **DNS Only** (Gray Cloud ☁️). Save. This ensures that `srv01.mysite.com` also points to my VPS and Cloudflare will respond on its behalf.
+4. **Create another A record** pointing the VPN subdomain to my VPS IP address. Click Add Record again. Select **Type = A**. In Name, enter `vpn`. In the IPv4 address field, enter the public IP address of the VPS server. Change to **DNS Only** (Gray Cloud ☁️). Save. This ensures that `vpn.mysite.com` also points to my VPS and Cloudflare will respond on its behalf.
+
+After adding the records, my DNS in Cloudflare should have at least:
+- one **A record** for `mysite.com` pointing to the VPS IP and
+- another **A record** for `srv01` pointing to the VPS IP.
+- another **A record** for `vpn` pointing to the VPS IP.
+
+| Type | Name  | Value        | Proxy     | Destination            | Purpose              |
+|------|-------|--------------|-----------|------------------------|----------------------|
+| A    | @     | VPS IP       | DNS Only  | mysite.com             | Root domain          |
+| A    | srv01 | VPS IP       | DNS Only  | srv01.mysite.com       | Administration       |
+| A    | vpn   | VPS IP       | DNS Only  | vpn.mysite.com         | VPN connection       |
+
