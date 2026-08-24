@@ -13,7 +13,7 @@
 
 ## High-Level Architecture Diagram
 
-```
+```mermaid
 graph TD
     User["Web User - Internet"]
     Attacker["Malicious Scanner or Bot"]
