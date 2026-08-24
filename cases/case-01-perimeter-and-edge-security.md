@@ -367,3 +367,82 @@ Bots don't "try passwords," they map, enumerate and correlate patterns. The VPN 
 
 The goal here is to close all ports in the firewall and create a "private bridge" between my device and the server.
 
+**VPN Site-to-Client (S2C)**
+
+Unlike a commercial VPN (which serves to hide my browsing), an S2C VPN connects the administrator to the server's internal network. 
+
+The **Server (Site)** acts as the private endpoint. The **Administrator (Client)** connects to the server via an encrypted tunnel. Thus, the server stops responding to any IP address on the internet, except for traffic traveling through the VPN tunnel.
+
+With the adoption of a S2C VPN, even if SSH has a low vulnerability, the attacker will not even be able to "see" that the port exists if they are not inside the VPN.
+
+My device gains a fixed internal IP address (e.g., 10.8.0.2), allowing for extremely restrictive firewall rules. Furthermore, it allows me to manage my server with complete security, even when connected to public Wi-Fi or third-party networks. I transform the server from "difficult to attack" to "invisible to those who shouldn't see it."
+
+#### Wireguard Adopted Architecture
+
+```mermaid
+flowchart LR
+    subgraph ADMIN["ADMINISTRATOR (VPN CLIENT)"]
+        direction TB
+        A1["ADMINISTRATOR (CLIENT)<br/><i>STATELESS</i>"]
+        A2["Device gets fixed internal IP<br/>(e.g. 10.8.0.2)"]
+        A3["Step 1: Activate VPN tunnel<br/>Step 2: Access via internal IP / hostname"]
+        A4["PRIVATE ADMINISTRATOR<br/><i>PRIVATE ADMINISTRATION</i><br/><i>STATELESS</i>"]
+        A1 --> A2 --> A3
+    end
+ 
+    NOTE1["Minimalist code<br/>Less surface for vulnerabilities"]
+ 
+    INTERNET(("PUBLIC INTERNET"))
+ 
+    TUNNEL["🔒 ENCRYPTED TUNNEL (UDP 51820) 🔒<br/><b>WIREGUARD</b>"]
+    PERF["High performance<br/>UDP stealth behavior"]
+ 
+    subgraph VPS["VPS SERVER (SITE VPN)"]
+        direction TB
+        V1["ENDPOINT<br/>WIREGUARD / GATEWAY"]
+        V2["PRIVATE INTERFACE<br/>VPN wg0"]
+        V3["INTERNAL RESOURCES"]
+        V4["Access via private IP / internal hostname (wg0)<br/><i>PERSISTENT</i>"]
+        V5["✔ Firewall rules based on internal IP<br/>✔ Conceptualize the internal client fixed IP determination"]
+        V1 --> V2 --> V3
+    end
+ 
+    subgraph ATK_TOP["EXTERNAL ATTACKERS (top)"]
+        AT1["☠ EXTERNAL ATTACKERS"]
+    end
+ 
+    BLOCK1["🚫 NON-TUNNEL ACCESS BLOCKED"]
+    BLOCK2["🚫 NON-TUNNEL ACCESS BLOCKED"]
+    SSH["❌ SSH P22"]
+    PORT["❌ Port 51820/UDP blocked for external scanner"]
+ 
+    subgraph ATK_BOTTOM["EXTERNAL ATTACKERS (bottom)"]
+        AT2["☠ EXTERNAL ATTACKERS"]
+    end
+ 
+    BLOCK3["🚫 NON-TUNNEL, NON-TUNNEL ACCESS BLOCKED"]
+    STEP3["⚠ Step 3: The firewall blocks everything outside the tunnel"]
+    UNAUTH["❌ Unauthorized internet IPs"]
+ 
+    QUOTE["\"WireGuard VPN S2C: Modern encryption<br/>and external invisibility via UDP stealth.\""]
+ 
+    ADMIN <--> INTERNET
+    INTERNET <--> TUNNEL
+    TUNNEL <--> V1
+ 
+    AT1 -.blocked.-> BLOCK1
+    BLOCK1 -.-> AT1
+    V1 -.-> BLOCK2
+    BLOCK2 -.-> AT1
+    V1 -- attempt --> SSH
+    SSH -.-> AT1
+    V1 -- attempt --> PORT
+    PORT -.-> AT1
+ 
+    AT2 -- attempt --> BLOCK3
+    ADMIN -.-> BLOCK3
+    UNAUTH -- attempt --> BLOCK3
+    BLOCK3 -.-> STEP3
+ 
+    V3 --> V5
+ ```
