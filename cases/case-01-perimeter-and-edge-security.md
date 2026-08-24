@@ -34,3 +34,106 @@ flowchart LR
   * **Cloudflare bypass neutralization**: Direct TCP/HTTPS connections to the origin VPS IP address timeout immediately.
 
 ---
+
+## Configuration Artifacts & Reference Code
+
+### 1. Generate SSH Key Pair
+To generate a modern, secure SSH key compatible with virtually any VPS provider, the recommended standard is **Ed25519**.
+
+Open the terminal and type the following command:
+```bash
+ssh-keygen -t ed25519 -C "email@example.com" -f ~/.ssh/my_key
+```
+- `-t ed25519`: Defines the algorithm (faster and more secure than the old RSA).
+- `-C`: Adds a comment (usually email) to identify the key on the server.
+- `-f`: Defines a specific name and path for the key.
+
+The terminal will ask two questions:
+1. **Enter passphrase**: (Recommended) Enter a password to protect the private key file. Or press Enter twice to leave it without a password (passphrase empty).
+2. **Enter same passphrase again**: Repeat the password.
+
+The command will create two files in the `~/.ssh` folder:
+- `my_key`: My Private Key. Never share this file.
+- `my_key.pub`: My Public Key. This is the file I will send to the VPS provider.
+
+I will need to copy the text inside the public key to paste into my provider's control panel. Use the command below to display the text:
+```bash
+cat ~/.ssh/my_specific_key.pub
+```
+
+### 2. System Base Configuration
+This section explains how to configure Linux OS base for secure and predictable administration before installing any stack.
+
+**Initial update and base packages**
+
+Install tools that assist in diagnosing and editing files on a daily basis.
+```bash
+sudo dnf check-update
+sudo dnf -y update 
+sudo dnf -y install ca-certificates curl wget gnupg2 vim nano jq unzip tar rsync bind-utils chrony
+```
+- `ca-certificates`, `curl`, `gnupg`: foundation for reliable repositories and downloads.
+- `bind-utils`: necessary for debugging routes, domains and ports.
+- `chrony`: correct timing avoids chaos with TLS, logs and validation.
+- `vim`, `nano`: indispensable text editors for configuring system files.
+- `jq`: JSON file processor via command line (essential for APIs and automations).
+- `unzip`, `tar`: standard tools for unpacking packages and backups.
+- `rsync`: efficient protocol for transferring and sync files between servers.
+- `wget`: utility for downloading files via HTTP/HTTPS/FTP.
+
+**Create an administrative user**
+
+Before creating the administrative user, change the default root password and store it in a password manager, preferably.
+
+Change `root` user password:
+```bash
+passwd root
+```
+This password will be used whenever I need to log in as `root`.
+
+#### a. Create a user with sudo
+The first step is to create a security layer by creating a regular user with administrative permissions.
+
+Create a dedicated user (e.g., ops, admin, or any other name) and grant superuser privileges.
+
+> [!NOTE]
+> The commands below are executed as root.
+
+Create `<username>` user
+```bash
+useradd -m <username>
+```
+Set password for this user:
+```bash
+passwd <username>
+```
+Add to group 'wheel'(group that allows using sudo in this distro):
+```bash
+usermod -aG wheel <username>
+```
+⚠️ Important test (without closing the current window):
+> [!IMPORTANT]
+> Never log out of the root terminal without first testing the new user.
+
+#### b. Copy SSH key to the new user
+From now on, I will use the <username> user for everything!
+
+Therefore, I have to ensure I can access my server without root using an SSH public key.
+
+On my computer (or wherever my SSH public key was generated or is stored), run the command below to copy the public key to my VPS server and make it available to the newly created <username> user:
+
+> [!IMPORTANT]
+> Note on key reuse
+>
+> Using the same SSH key for `root` and the administrative user works, but reduces the security isolation between the two accounts, because if the key is leaked, both accesses are compromised together.
+>
+> To ensure complete security, consider generating a dedicated key per user.
+
+```bash
+ssh-copy-id -i ~/.ssh/my_key.pub <username>@SERVER_IP
+```
+Test login as <username> user using SSH key:
+```bash
+ssh -i ~/.ssh/my_key <username>@SERVER_IP
+````
+
