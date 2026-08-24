@@ -136,4 +136,18 @@ Test login as <username> user using SSH key:
 ```bash
 ssh -i ~/.ssh/my_key <username>@SERVER_IP
 ````
+---
 
+### 3. Domain registration and DNS delegation in Cloudflare (DNS Only)
+First I need to have a valid domain and I will delegate the DNS authority of this domain to Cloudflare, operating exclusively in DNS only.
+
+&rarr; Why is the domain mandatory?
+A correctly configured domain is a technical prerequisite for:
+- **SSL/TLS Certificates**: The future issuance of SSL/TLS certificates requires that the domain is already assigned to the IP of the VPS to validate the ownership of the server.
+- **Standard administrative access**: Using `ssh <username>@srv1.domain.com` is superior to using IP. If I need to change my server, just update the DNS and automation, monitoring and access scripts will continue working without alterations.
+- **Reputation and security**: The domain allows me to implement layers of protection that direct IPs do not support, protecting my Web App against global attacks from bots.
+
+#### Domain Delegation to Cloudflare
+Cloudflare will act as my primary DNS zone, providing near-instant propagation and a foundation for future security. It will also serve as a central point for name management.
+
+a. DNS Operating Modes in Cloudflare
