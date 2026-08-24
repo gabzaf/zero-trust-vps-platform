@@ -64,7 +64,7 @@ graph TD
 
 ---
 
-## Production Engineering Cases (S.T.A.R. Format)
+## Engineering Case Studies (S.T.A.R. Format)
 
 Each case below documents a real engineering decision behind this platform, following the **Situation, Task, Action, Result** format, the goal is to show *what* was deployed, *why* specific trade-offs were made and how they were validated.
 
