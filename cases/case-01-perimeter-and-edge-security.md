@@ -210,7 +210,6 @@ After adding the records, my DNS in Cloudflare should have at least:
 ---
 
 ### 4. Admin Access Hardening (`/etc/ssh/sshd_config.d`)
-
 This configuration neutralizes the two primary attack surfaces in administrative access: a permissive SSH daemon and direct remote root execution.
 
 SSH is the server's administrative gateway. If this gateway is poorly protected, the rest of the infrastructure is irrelevant. Firewalls, VPNs and reverse proxies don't compensate for exposed administrative access.
@@ -356,4 +355,15 @@ At this point:
 - SSH authentication logs are auditable.
 
 This eliminates the largest initial attack surface of Linux servers.
+
+---
+
+### 5. VPN Site-to-Client (S2C) and Private Administration
+This section isolates server management from the internet, creating an encrypted tunnel that makes the infrastructure invisible to external scans and limits access only to authorized devices.
+
+Even with key-protected SSH and root blocked, exposing the administrative port to the public internet is an unnecessary risk.
+
+Bots don't "try passwords," they map, enumerate and correlate patterns. The VPN adds a network layer on top of the identity layer I've already protected, as the server stops responding to any internet IP except for traffic traveling inside the tunnel.
+
+The goal here is to close all ports in the firewall and create a "private bridge" between my device and the server.
 
