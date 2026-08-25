@@ -1,37 +1,69 @@
-# Case 01: Perimeter Hardening, Edge Security & Zero-Trust Administration
+# Case 01: VPS Perimeter Foundation & Zero-Trust Administration
 
 > **Domain**: Infrastructure Security, Linux Administration, Network Hardening
 >
-> **Technologies**: Linux, Cloudflare Edge & WAF, WireGuard VPN, OpenSSH, UFW / iptables, Origin TLS 
+> **Technologies**: AlmaLinux, Cloudflare DNS, WireGuard VPN, OpenSSH, firewalld, sudoers
 >
 > **Methodology**: S.T.A.R. Framework (Situation, Task, Action, Result)
+
+---
+
+## Table of Contents
+
+- [Executive Summary (S.T.A.R. Breakdown)](#executive-summary-star-breakdown)
+- [Configuration Artifacts & Reference Code](#configuration-artifacts--reference-code)
+  - [1. Generate SSH Key Pair](#1-generate-ssh-key-pair)
+  - [2. System Base Configuration](#2-system-base-configuration)
+    - [a. Create a user with sudo](#a-create-a-user-with-sudo)
+    - [b. Copy SSH key to the new user](#b-copy-ssh-key-to-the-new-user)
+  - [3. Domain registration and DNS delegation in Cloudflare (DNS Only)](#3-domain-registration-and-dns-delegation-in-cloudflare-dns-only)
+    - [Domain Delegation to Cloudflare](#domain-delegation-to-cloudflare)
+  - [4. Admin Access Hardening (`/etc/ssh/sshd_config.d`)](#4-admin-access-hardening-etcsshsshd_configd)
+  - [5. VPN Site-to-Client (S2C) and Private Administration](#5-vpn-site-to-client-s2c-and-private-administration)
+    - [WireGuard Adopted Architecture](#wireguard-adopted-architecture)
+    - [1. Connect via SSH](#1-connect-via-ssh)
+    - [2. WireGuard Installation](#2-wireguard-installation)
+    - [3. Server Side](#3-server-side)
+      - [3.1 Keys Generation](#31-keys-generation)
+      - [3.2 VPN Interface Configuration `wg0`](#32-vpn-interface-configuration-wg0)
+      - [3.3 Firewall Configuration (Server)](#33-firewall-configuration-server)
+    - [4. Client Side](#4-client-side)
+      - [4.1 Keys Generation](#41-keys-generation)
+      - [4.2 Client Registration on Server](#42-client-registration-on-server)
+    - [5. Start the VPN](#5-start-the-vpn)
+    - [6. Admin Device Configuration (Client)](#6-admin-device-configuration-client)
+    - [7. Exclusively Private Administration](#7-exclusively-private-administration)
+
+---
 
 ## Executive Summary (S.T.A.R. Breakdown)
 
 ```mermaid
 flowchart LR
-    S["<b>Situation</b><br/>• Raw VPS on Public WAN<br/>• Constant Port Scans & Brute-force<br/>• DDoS & Origin Exposure"]
-    T["<b>Task</b><br/>• Eliminate Public Admin Ports<br/>• Hide Origin Server Real IP<br/>• Enforce End-to-End Encryption"]
-    A["<b>Action</b><br/>• WireGuard Admin Tunnel (Client→Origin)<br/>• SSH Hardening (Ed25519, No Root)<br/>• Cloudflare-Aware Host Firewall<br/>• Origin Locked to Cloudflare IPs + Origin CA"]
-    R["<b>Result</b><br/>• 0 Exposed Admin Ports<br/>• Zero SSH Brute-force Incursions<br/>• Origin Unreachable Outside Edge"]
+    S["<b>Situation</b><br/>- Fresh VPS reachable on public IPv4<br/>- Default administrative exposure risk<br/>- No private management plane yet"]
+    T["<b>Task</b><br/>- Bootstrap a secure Linux baseline<br/>- Replace root/password SSH with key-only admin access<br/>- Prepare DNS and move administration behind WireGuard"]
+    A["<b>Action</b><br/>- Generate Ed25519 SSH identity<br/>- Create admin user and base tooling<br/>- Delegate DNS to Cloudflare in DNS-only mode<br/>- Harden OpenSSH and restrict sudo<br/>- Deploy WireGuard S2C private admin tunnel"]
+    R["<b>Result</b><br/>- Root/password SSH removed from normal access path<br/>- Admin privileges explicitly scoped<br/>- Server reachable for administration through 10.10.10.0/24<br/>- DNS ready for later edge/WAF hardening"]
 
     S --> T --> A --> R
 ```
 
 ---
 
-* **Situation**: Instantiating a cloud Linux self hosting VPS with a public IPv4 immediately exposes the machine to scanning engines and non-stop SSH brute-force campaigns.
-* **Task**: Harden the host perimeter, eliminate exposed administrative attack surfaces from the public internet, ensure remote operations run exclusively through an encrypted private overlay and guarantee that **100% of public HTTP/S traffic is filtered by Cloudflare Edge (WAF/DDoS)** with zero possibility of direct-to-IP bypass attacks.
+* **Situation**: Instantiating a cloud Linux self-hosted VPS with a public IPv4 immediately creates an exposed administrative surface. Before any application stack, reverse proxy, or public web ingress exists, the server needs a controlled identity model, predictable DNS, and a private administration path.
+* **Task**: Build the first security baseline for the VPS: generate a dedicated SSH identity, create a non-root administrative account, configure Cloudflare DNS records, harden OpenSSH, reduce standing sudo privileges, and establish a WireGuard Site-to-Client tunnel so future administration can move away from the public interface.
 * **Action (Technical Implementation)**:
-  1. **SSH Identity Hardening**: Disabled remote `root` login, disabled password authentication entirely, enforced asymmetric `Ed25519` key pairs and defined an explicit administrative user whitelist (`AllowUsers`).
-  2. **Zero-Trust Administrative Overlay (WireGuard S2C)**: Deployed a **WireGuard** Site-to-Client VPN (UDP 51820). The OpenSSH daemon and telemetry endpoints were restricted to respond exclusively across the private VPN overlay subnet (`10.10.10.0/24`).
-  3. **Cloudflare-Aware Host Firewall (Default-DROP)**: Configured host-level firewall rules (UFW / netfilter) enforcing an unconditional default-DROP policy on inbound WAN traffic. Ports 80 and 443 strictly authorize official Cloudflare CIDR blocks. Direct-to-IP connection attempts from unauthorized public sources are silently dropped at the packet filtering level.
-  4. **Strict Cryptographic Ingress**: Installed Cloudflare Origin CA certificates on the origin reverse proxy and enabled **Full (Strict) SSL/TLS mode**, ensuring authenticated end-to-end encryption without risk of Man-in-the-Middle (MitM) interception.
-  5. **Edge Threat Mitigation (WAF)**: Configured Cloudflare Web Application Firewall custom rules to challenge high threat-score requests, block known abusive ASNs, and rate-limit sensitive endpoints.
-* **Result (Quantifiable Engineering Proof)**:
-  * **Zero exposed administrative ports on WAN**: External port audits and scanners detect zero accessible management services.
-  * **SSH brute-force attempts reduced to 0 on the host**: The SSH daemon receives zero packets from outside the WireGuard tunnel.
-  * **Cloudflare bypass neutralization**: Direct TCP/HTTPS connections to the origin VPS IP address timeout immediately.
+  1. **SSH Identity Bootstrap**: Generated an `Ed25519` key pair and copied the public key to the future administrative account.
+  2. **System Base Configuration**: Updated the host, installed operational tooling, configured time synchronization, and created a named administrative user with initial `wheel` access for setup.
+  3. **Cloudflare DNS Foundation**: Delegated the domain to Cloudflare and created DNS-only `A` records for the root domain, `srv01`, and `vpn`, keeping records unproxied while the host baseline and VPN endpoint are being established.
+  4. **Administrative Access Hardening**: Disabled remote `root` login, disabled password and interactive SSH authentication, enforced public-key authentication, limited SSH login through `AllowUsers`, and replaced broad `wheel` access with explicit sudoers entries.
+  5. **WireGuard Private Administration**: Deployed a WireGuard Site-to-Client VPN on `10.10.10.0/24`, assigned the server `10.10.10.1`, assigned the admin device `10.10.10.2/32`, and shifted the `srv01` administrative DNS record to the private VPN address.
+* **Result (Current Engineering Proof)**:
+  * **Key-only administrative access established**: The operational user can authenticate with the generated SSH key while root and password-based SSH access are removed from the normal remote access path.
+  * **Sudo blast radius reduced**: Administrative privilege is expressed through auditable `/etc/sudoers.d/<username>` entries instead of permanent unrestricted `wheel` access.
+  * **Private management plane created**: The server and admin device communicate over WireGuard using fixed internal addresses in `10.10.10.0/24`.
+  * **DNS aligned to the access model**: `vpn.mysite.com` remains a public DNS-only endpoint for tunnel establishment, while `srv01.mysite.com` resolves to `10.10.10.1` for VPN-only administration.
+  * **Ready for the next perimeter step**: With private administration validated, public SSH exposure can be closed at the firewall without losing operator access.
 
 ---
 
@@ -377,7 +409,7 @@ With the adoption of a S2C VPN, even if SSH has a low vulnerability, the attacke
 
 My device gains a fixed internal IP address (e.g., 10.8.0.2), allowing for extremely restrictive firewall rules. Furthermore, it allows me to manage my server with complete security, even when connected to public Wi-Fi or third-party networks. I transform the server from "difficult to attack" to "invisible to those who shouldn't see it."
 
-#### Wireguard Adopted Architecture
+#### WireGuard Adopted Architecture
 
 ```mermaid
 flowchart LR
@@ -454,9 +486,9 @@ The new access flow after completing this module will be:
 2. Access the server via private IP or internal hostname.
 3. The firewall will block any access attempts that do not originate from the tunnel.
 
-#### 1. Connect via SSH.
+#### 1. Connect via SSH
 
-#### 2. Wireguard Installation
+#### 2. WireGuard Installation
 ```bash
 sudo dnf install -y epel-release
 sudo dnf install -y wireguard-tools
@@ -542,7 +574,7 @@ wg genkey | tee client.key | wg pubkey > client.pub
 Generated keys:
 - `client.key`: My VPN private key. This goes in my local configuration file
 - `client.pub`: My VPN public key. This goes in the server's `wg0.conf` file to be registered on the server
-###### 4.2 Client Registration on Server
+##### 4.2 Client Registration on Server
 Now that I have the `client.pub`, I go back to the server and I add the `[Peer]` block to the end of the `/etc/wireguard/wg0.conf` file:
 ```text
 [Peer]
@@ -691,6 +723,5 @@ From now on, this will be my only way to manage the server from the next steps o
 ```bash
 ssh -i ~/.ssh/sua_chave <username>@10.10.10.1
 ```
-
 
 
