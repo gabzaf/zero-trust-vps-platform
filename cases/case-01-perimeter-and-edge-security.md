@@ -446,3 +446,251 @@ flowchart LR
  
     V3 --> V5
  ```
+
+I use the WireGuard protocol for Site-to-Client (S2C) VPN implementation. It is minimalist in code, meaning less surface area for vulnerabilities. Furthermore, it comes with modern encryption via **Curve25519** and has **UDP stealth** behavior that does not respond to port scans. To an external scanner, port 51820/UDP is indistinguishable from a blocked port.
+
+The new access flow after completing this module will be: 
+1. Activate the VPN tunnel on my computer.
+2. Access the server via private IP or internal hostname.
+3. The firewall will block any access attempts that do not originate from the tunnel.
+
+#### 1. Connect via SSH.
+
+#### 2. Wireguard Installation
+```bash
+sudo dnf install -y epel-release
+sudo dnf install -y wireguard-tools
+```
+
+#### 3. Server Side
+##### 3.1 Keys Generation
+On server, generate the id key pair:
+```bash
+cd etc/wireguard
+```
+- **Generate the security keys**:
+```bash
+sudo bash -c "umask 077; wg genkey | tee server.key | wg pubkey > server.pub"
+```
+- `umask 077`: guarantees that only the owner (root) can read or write the files generated below. Sets the default permission 600 for root using security mask 077 (Base 666 minus 077 = 600 (-rw-------)) so that the private and public keys are created closed from the source. It is the security standard recommended by the official WireGuard documentation.
+- `wg genkey`: Generates a random private key using elliptic curve cryptography (Curve25519). It's my "master secret."
+- `tee server.key`: The `tee` command receives the generated key, saves it in the `server.key` file and simultaneously sends it to the next command via pipe (`|`).
+- `wg pubkey`: Receives the private key and mathematically calculates its corresponding public key. It is this key that I share; the private key MUST never leave the server.
+
+Keys generated:
+- `server.key`: Server private identity (never share)
+- `server.pub`: Server public identity
+
+##### 3.2 VPN Interface Configuration `wg0`
+Create the file `/etc/wireguard/wg0.conf`:
+```bash
+sudo nano /etc/wireguard/wg0.conf
+```
+```text
+[Interface]
+Address = 10.10.10.1/24
+ListenPort = 51820
+PrivateKey = <SERVER_CONTENT.KEY>
+
+# Enable packet forwarding
+PostUp = sysctl -w net.ipv4.ip_forward=1
+PostDown = sysctl -w net.ipv4.ip_forward=0
+```
+This file defines how the virtual network interface will behave:
+- `Address = 10.10.10.1/24`: Defines the internal IP of the server on the private network. The `/24` indicates that I can have up to 253 devices (clients) connected to this subnet (`10.10.10.1` to `10.10.10.254`).
+- `ListenPort = 51820`: The UDP port where the server will listen for connections. WireGuard is silent: it does not respond to port scanners unless the client sends a valid key.
+- `PostUp = sysctl -w net.ipv4.ip_forward=1`: The moment the VPN goes up, this command enables packet forwarding in the Linux Kernel. This allows data to travel between the VPN interface and the rest of the system.
+- `PostDown = sysctl -w net.ipv4.ip_forward=0`: For security, disable packet forwarding as soon as the VPN is turned off, preventing network "leaks".
+
+> [!IMPORTANT]
+> - 10.10.10.0/24 is an administration-only network;
+> - do not reuse network ranges from my home LAN;
+> - `wg0` does not automatically expose services.
+
+##### 3.3 Firewall Configuration (Server)
+WireGuard uses UDP 51820 by default. Even with the interface correctly configured, `firewalld` will silently drop this traffic unless explicitly allowed and because WireGuard doesn't send error responses, this failure is invisible: no errors, just zero handshake and zero bytes received.
+
+Open the port:​
+```bash
+sudo firewall-cmd --permanent --add-port=51820/udp && sudo firewall-cmd --reload ​
+```
+Verify:​
+```bash 
+sudo firewall-cmd --list-all ​
+```
+I should see `51820/udp` listed under ports:.
+
+#### 4. Client Side
+In addition to generating the keys, I need the software to run the tunnel. Without the client installed:
+1. My computer wouldn't know how to "speak" the WireGuard protocol.
+2. I would not be able to create the virtual network interface that connects me to the server.
+I must install the command line tools on my local computer:
+```bash
+sudo apt update 
+sudo apt upgrade -y && sudo apt install wireguard-tools
+```
+##### 4.1 Keys Generation
+For the tunnel to be established, my computer needs its own cryptographic identity.
+
+> [!WARNING]
+> Attention: Do not generate client keys within the server. Generate them on my local machine so my private key never touches the network.
+
+On my local computer, generate the client keys by running:
+```bash
+wg genkey | tee client.key | wg pubkey > client.pub
+```
+Generated keys:
+- `client.key`: My VPN private key. This goes in my local configuration file
+- `client.pub`: My VPN public key. This goes in the server's `wg0.conf` file to be registered on the server
+###### 4.2 Client Registration on Server
+Now that I have the `client.pub`, I go back to the server and I add the `[Peer]` block to the end of the `/etc/wireguard/wg0.conf` file:
+```text
+[Peer]
+# Generated public key in my computer (client.pub)
+PublicKey = <CLIENT_CONTENT.PUB>
+
+# The fixed IP address that this device will have within the VPN tunnel.
+AllowedIPs = 10.10.10.2/32
+```
+Each customer receives:
+- a fixed IP
+- a /32 block
+#### 5. Start the VPN
+In the server, start the interface and ensure it goes up during boot:
+```bash
+sudo systemctl enable wg-quick@wg0
+```
+```bash
+sudo systemctl start wg-quick@wg0
+```
+- `systemctl enable wg-quick@wg0`: `@wg0` tells the system to look for the `wg0.conf` configuration file. The enable command ensures that the VPN automatically goes up if the server is restarted.
+- `systemctl start wg-quick@wg0`: Activates the virtual network interface immediately.
+
+Verify:
+```bash
+wg show
+```
+```bash
+ip a show wg0
+```
+Expected state:
+- Active `wg0` interface;
+- Listed peer;
+- recent handshake after client connection.
+#### 6. Admin Device Configuration (Client)
+In order for my notebook to "see" the server through the tunnel, I must create a local configuration file.
+
+Create the config file:
+```bash
+sudo nano /etc/wireguard/vps-admin.conf
+```
+File in the client:
+```text
+[Interface]
+PrivateKey = <CLIENT_CONTENT.key>
+Address = 10.10.10.2/32
+
+[Peer]
+PublicKey = <SERVER_CONTENT.pub>
+# ATTENTION: Use a subdomain which always pointsto the public IP (ex: vpn.seudominio.com)
+Endpoint = vpn.mydomain.com:51820
+AllowedIPs = 10.10.10.0/24
+PersistentKeepalive = 25
+```
+> [!IMPORTANT]
+> In Cloudflare, make sure to create the `vpn.mydomain.com` record pointing to the VPS's Public IP (Gray Cloud).
+
+- `PrivateKey`: The private key generated ON MY COMPUTER (`client.key`)
+- `Address = 10.10.10.2/32`: Defines my device's identity on the internal network. The `/32` specifies that this address is unique to this host.
+- `PublicKey`: The SERVER's public key (`server.pub`)
+- `Endpoint = srv01.mydomain.com:51820`: Indicates where the client should "knock on the door". Use the domain created earlier to access my server.
+- `AllowedIPs = 10.10.10.0/24`: This is the most important client parameter. It tells my OS: "Only traffic destined for the `10.10.10.x` network should go through the VPN". Everything else (YouTube, Netflix etc.) continues using my normal internet (Split Tunneling).
+- `PersistentKeepalive = 25`: Because WireGuard is silent, home or ISP firewalls may "forget" the open connection due to inactivity. This command sends an invisible "hello" every 25 seconds to keep the tunnel always open and ready for use.
+
+**Tunnel Lifecycle (connect and disconnect)**
+
+Unlike background services, administrative VPN should be used on demand.
+
+🟢 To connect via the terminal:
+```bash
+sudo wg-quick up vps-admin
+```
+Example of successful output:
+```text
+[#] ip link add vps type wireguard
+[#] wg setconf vps /dev/fd/63
+[#] ip -4 address add 10.10.10.2/32 dev vps
+[#] ip link set mtu 65456 up dev vps
+[#] ip -4 route add 10.10.10.0/24 dev vps
+```
+🔴 To disconnect:
+```bash
+sudo wg-quick down vps-admin
+```
+**Connectivity Validation and Diagnostics**
+
+Execute on the client, with the VPN connected:
+```bash
+# Internal Connectivity Text
+ping 10.10.10.1
+```
+Run the command to view the network interface created on the client:
+```bash
+ip -br a show vps-admin
+```
+If "UP" appears along with the IP address `10.10.10.2/32`, the local interface is ready.
+
+Execute on the server:
+```bash
+sudo wg show
+```
+Example of a successful exit:
+```text
+interface: wg0
+  public key: t4hdnhP1Yk24XB5+GF+F+jExaZRbZFFllx1cJurIeRQ=
+  private key: (hidden)
+  listening port: 51820
+
+peer: O3Ds/iKeVYnx5YfnAwRqPFvJYw0llPWKcaML22OwL0M=
+  endpoint: srv01.mydomain.com:51820
+  allowed ips: 10.10.10.2/32
+  latest handshake: 1 minute, 14 seconds ago
+  transfer: 4.12 KiB received, 2.98 KiB sent
+```
+1. `latest handshake`: If this line does not appear, the connection was not established. WireGuard does not send error messages; if the keys are wrong, it simply remains silent.
+2. `endpoint`: Shows the actual destination I am currently connected to. It should confirm my VPS server.
+3. `transfer`: Indicates that actual data (such as my ping) has traveled through the tunnel.
+#### 7. Exclusively Private Administration
+> [!IMPORTANT]
+> Test SSH access through the VPN tunnel on another terminal, while leaving the other connected tab open.
+
+Instead of accessing via IP, let's create an official DNS record for internal management.
+
+The most elegant solution is to use the Split-Horizon DNS concept (or simply point the public DNS to a private IP of my VPN `10.10.10.1`).
+
+This ensures that traffic leaves my laptop, enters the VPN tunnel and goes directly to the server, without going around the public internet.
+
+Go to the Cloudflare DNS panel and CHANGE the record for the previously created administrative subdomain and change the IPv4 field from my VPS's public IP to my VPN's local IP:
+
+| Type | Name  | Value       | Proxy                         | Destination          |
+|------|------|-------------|-------------------------------|----------------------|
+| A    | srv01 | 10.10.10.1 | DNS Only (⚠️ Grey Cloud)      | srv01.mysite.com   |
+
+> When I try to access `srv01.mysite.com` while on the VPN, my computer will resolve to the IP address `10.10.10.1`. Because I am connected to the VPN, it will find the route. Anyone outside the VPN will try to access this private IP address and will fail.
+
+Now, connect my SSH terminal using the name and not the IP address. This validates that my DNS is resolving internal addresses correctly:
+```bash
+ssh -i ~/.ssh/my_key <username>@srv01.mysite.com
+```
+🟢 If I log in, congratulations: I have created a domain that only exists for those who have access to my VPN and are ready to permanently close public port 22 via the firewall.
+
+From now on, this will be my only way to manage the server from the next steps onwards.
+
+> [!IMPORTANT]
+> Alternatively, I can still access it directly via internal IP using a VPN connection. I should be able to log in to the server using the IP address 10.10.10.1
+```bash
+ssh -i ~/.ssh/sua_chave <username>@10.10.10.1
+```
+
+
+
