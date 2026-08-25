@@ -609,6 +609,9 @@ Expected state:
 - Active `wg0` interface;
 - Listed peer;
 - recent handshake after client connection.
+
+---
+
 ### 6. Admin Device Configuration (Client)
 In order for my notebook to "see" the server through the tunnel, I must create a local configuration file.
 
@@ -692,6 +695,9 @@ peer: O3Ds/iKeVYnx5YfnAwRqPFvJYw0llPWKcaML22OwL0M=
 1. `latest handshake`: If this line does not appear, the connection was not established. WireGuard does not send error messages; if the keys are wrong, it simply remains silent.
 2. `endpoint`: Shows the actual destination I am currently connected to. It should confirm my VPS server.
 3. `transfer`: Indicates that actual data (such as my ping) has traveled through the tunnel.
+
+---
+
 ### 7. Exclusively Private Administration
 > [!IMPORTANT]
 > Test SSH access through the VPN tunnel on another terminal, while leaving the other connected tab open.
@@ -739,8 +745,6 @@ At this point, no public services should exist. Here:
 - I do not publish services;
 - I do not integrate Cloudflare as a proxy.
 - I protect raw network traffic, before any upper layer.
-
----
 
 **Why a Firewall?**
 
@@ -886,3 +890,194 @@ This is the correct baseline state before operating services:
 ---
 
 ### 9. Active Monitoring and Incident Response
+This section empowers me to identify intrusion patterns in real time, using log analysis and active defense tools to automatically detect and ban malicious actors.
+
+Firewalls and VPNs reduce the attack surface, but do not eliminate attacks. Even with minimal open ports (e.g., `UDP 51820` from WireGuard), bots continue to attempt:
+- brute force attacks via SSH (even when blocked);
+- user enumeration;
+- handshake floods;
+- exploitation attempts through noise;
+
+I will create telemetry + reaction, ensuring that:
+- I see what happens;
+- the system responds automatically;
+- repeated attacks are stopped at the source;
+- processing power is not wasted on hostile connections;
+- my logs remain clean, containing only relevant data.
+
+Here I protect operator time and server stability.
+
+#### Defense Architecture
+
+The strategy is simple and verifiable layers:
+1. Reliable logs (`systemd` + `sshd`)
+2. Pattern detector (Fail2ban)
+3. Automatic action (ban on the local firewall)
+4. Correct scope (do not ban my own VPN)
+
+No heavy SIEM, no external SaaS at this stage.
+
+#### 1. Telemetry Preparation and Verification
+Confirm that SSH is sending detailed data to the log system:
+```bash
+grep -i "^LogLevel" /etc/ssh/sshd_config
+```
+Expected result: `LogLevel VERBOSE`
+
+This ensures a log of:
+- login attempts;
+- rejected keys;
+- non-existent users;
+- source IPs.
+
+If not configured in this mode, change and run:
+```bash
+sudo systemctl reload sshd
+```
+#### 2. Configure Intrusion Detection
+Fail2ban is a tool that reads system logs and upon detecting an attack pattern, executes a blocking command in iptables.
+
+a. **Fail2ban Installation**
+
+```bash
+sudo dnf install -y epel-release
+sudo dnf install -y fail2ban
+```
+After installation, check the service status and enable it to start automatically with the system. Ensure Fail2ban starts when the server boots up and start the service now:
+```bash
+sudo systemctl enable --now fail2ban
+```
+Check system status:
+```bash
+sudo systemctl status fail2ban
+```
+b. **Base Shielding** (jail.local)
+
+Create an overlay file to customize the rules:
+> [!WARNING]
+> Never edit `jail.conf` directly.
+```bash
+sudo nano /etc/fail2ban/jail.local
+```
+Apply this configuration:
+```text
+[DEFAULT]
+bantime = 1h
+findtime = 10m
+maxretry = 3
+
+backend = systemd
+banaction = iptables-multiport
+
+# EXCLUSION ZONE (CRITICAL): Never ban myself or the VPN
+ignoreip = 127.0.0.1/8 ::1 10.10.10.0/24
+```
+- `bantime 1h`: Hostile IP is offline for 1 hour
+- `findtime 10m` Time window to count failures (10 minutes)
+- `maxretry 3` Number of failures allowed before ban (3 failures)
+- `backend systemd`: Reads directly from the system journald (more reliable)
+- `banaction`: Creates a specific chain in my Firewall for banned IPs, keeping my original rules clean and organized.
+- `ignoreip`: Never ban myself or the VPN.
+
+> [!WARNING]
+> Critical: If I forget to include the VPN network `10.10.10.0/24`, I may self-ban myself if I repeatedly enter the wrong SSH key, for example.
+
+c. **SSH Jail**
+
+Explicitly enable SSH jail:
+```bash
+sudo nano /etc/fail2ban/jail.local
+```
+```text
+- AT THE END OF THE FILE, ADD THIS BLOCK [SSHD]
+
+[sshd]
+enabled = true
+port = ssh
+logpath = %(sshd_log)s
+```
+Even without a password, this jail is essential to:
+- block enumeration;
+- reduce noise;
+- protect CPU against floods.
+
+After saving the file, restart the service:
+```bash
+sudo systemctl restart fail2ban
+```
+#### 3. Automatic Response Validation
+**View General Status**
+```bash
+sudo fail2ban-client status
+```
+Expected Result:
+```text
+Number of jails: 1
+Jail list: sshd
+```
+**View SSH jail status** (who is currently "stuck" on SSH)
+```bash
+sudo fail2ban-client status sshd
+```
+I should see:
+- Banned IPs (if any);
+- Active counters.
+
+#### 4. Controlled Tests (Mandatory)
+
+**Test 1: Invalid Attempt (from outside the VPN)**
+
+I have configured iptables to DROP any connection on port 22 coming from the public internet. That is, any packet that hits the firewall will be silently discarded.
+
+Since the packet will be discarded by the Firewall before reaching the SSH service, `sshd` never gets to see the login attempt. Consequently, since Fail2ban reads the `sshd` logs to decide who to ban, the log will be empty (since the firewall blocked the entry); it takes no action.
+
+To test Fail2ban, I need the packet to reach the service. Therefore, temporarily open the Firewall, as per the following steps:
+	- a. On the server, open port 22 on the public IP:
+	```bash
+	sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+	```
+	- b. From an IP address outside the VPN (e.g., using 4G from a mobile phone or another machine), try logging in via SSH - repeat until I exceed 3 attempts (value defined in `maxretry`):
+		The intuitive first attempt would be:
+		```bash
+		ssh fakeuser@srv01.mydomain.com
+		```
+> [!IMPORTANT]
+> Split-Horizon DNS caveat: This will NOT work. The domain `srv01.mydomain.com` resolves to the private VPN IP (e.g., `10.10.10.1`) due to Split-Horizon DNS. Clients outside the VPN cannot reach the server via domain name. Use the public IP of the VPS directly:
+
+```bash
+ssh fakeuser@<VPS_PUBLIC_IP>
+```
+
+	- c. On the server, check for the ban:
+		```bash
+		sudo fail2ban-client status sshd
+		```
+🔴 Expected result:
+- IP ​​automatically banned;
+- new attempts don't even reach SSH.
+
+	- d. On the server, check the Firewall:
+		```bash
+		sudo iptables -L -n
+		```
+I will see a new `f2b-sshd` rule blocking the attacking IP address.
+	- e. Finally, on the server, close port 22 again:
+		```bash
+		sudo iptables -D INPUT -p tcp --dport 22 -j ACCEPT
+		```
+**Test 2: VPN Access Remains Functional**
+```bash
+ssh -i ~/.ssh/my_key ops@10.10.10.1
+```
+🟢 Expected result:
+- normal access;
+- no impact on VPN.
+
+### Expected final state
+In the current configuration, Fail2ban will serve as a "second line of defense" if I need to open any public ports in the future or to protect the WireGuard port itself (UDP 51820) against packet flooding.
+
+Therefore, at this point:
+- hostile attempts are detected;
+- malicious IPs are automatically banned;
+- my VPN is never affected;
+- the server responds automatically to external noise.
