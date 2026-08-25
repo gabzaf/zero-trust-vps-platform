@@ -1081,3 +1081,240 @@ Therefore, at this point:
 - malicious IPs are automatically banned;
 - my VPN is never affected;
 - the server responds automatically to external noise.
+
+---
+
+### 10. Cloudflare Proxy and Infrastructure Obfuscation
+This section activates Cloudflare Proxy as a layer of protection, ensuring that my VPS's real address is never exposed to the public network.
+
+Up to this point, my VPS is not visible on the internet because no public ports are open, all administration occurs via VPN and the local firewall operates in `deny all` mode.
+
+This state is intentional, but impractical for serving applications and receiving end-user traffic. The solution is not to open ports to the global internet, but to create a single trusted edge.
+
+From now on, Cloudflare ceases to be just a DNS server and begins to act as a reverse proxy, an attack absorption layer and a single point of entry, ensuring that my VPS's real address is never exposed to the public network.
+
+Users will never communicate with my VPS; they will communicate with Cloudflare!
+
+At the end:
+- the Cloudflare proxy will be activated (orange cloud);
+- ports 80/443 remain closed to the world;
+- only Cloudflare IPs will be allowed on the local firewall;
+- Any attempt to directly access the real IP address will continue to be blocked.
+
+#### 1. Cloudflare Proxy Activation
+
+In the Cloudflare panel, access **DNS → Records** and configure the records as follows:
+
+**a. Activate Proxy on the root record**
+
+Locate the `@` record  and change it from DNS Only (gray) to **Proxied** (**orange cloud**).
+
+| Type | Name | Value        | Proxy              | Destination     |       |
+|------|------|-------------|--------------------|-----------------|-------------|
+| A    | @    | VPS IP      | Proxied (Orange)   | mysite.com    | root domain
+
+**b. Add Wildcard record for public domains**
+
+Add a new record:
+
+| Type | Name | Value   | Proxy            | Destination   ||
+|------|------|---------|------------------|---------------|--------------------------------------------------------------------|
+| A    | *    | VPS IP  | Proxied (Orange) | mysite.com  |Wildcard: allows any PUBLIC subdomain to work automatically.|
+
+> The wildcard (*) allows any subdomain to work automatically. When I need to create app.mysite.com or admin.myysite.com, the DNS already responds without needing to create an individual record.
+
+**c. Keep `srv01` in DNS Only**
+
+The `srv01` record should remain **DNS Only (grayed out)**. It is used for direct SSH access, which does not work through the Cloudflare proxy.
+
+**d. Final state of the records**:
+
+| Type | Name  | Value       | Proxy              | Usage                                      |
+|------|-------|-------------|--------------------|--------------------------------------------|
+| A    | @     | VPS IP      | Proxied (Orange)   | Root domain                                |
+| A    | *     | VPS IP      | Proxied (Orange)   | Current and future public subdomains        |
+| A    | srv01 | 10.10.10.1  | DNS Only (Grey ☁️)  | SSH / Administration (VPN only)             |
+
+> Immediate result: From this point on, HTTP/HTTPS requests pass through Cloudflare's servers, and the VPS's real IP address no longer appears in any public response.
+
+#### 2. Adjust Local Firewall to Cloudflare-Aware
+
+Do not open ports 80/443 to the world. I will only authorize official Cloudflare IPs and make the local firewall on my VPS server a Cloudflare-aware firewall.
+
+> A Cloudflare-aware Firewall is a security configuration on my origin server (VPS) that verifies and validates that traffic comes exclusively from the Cloudflare network.
+
+In a common configuration, the server firewall is "blind": it sees an access on port 443 and lets it pass. A Cloudflare-aware firewall is intelligent: it knows that if the originating IP does not belong to Cloudflare, the connection should be discarded immediately.
+
+**a. Consult the official Cloudflare IPs**
+
+The Cloudflare IP range changes periodically. Always use the official list:
+```bash
+# Download updated list of IPv4 IPs
+curl -s https://www.cloudflare.com/ips-v4 -o /tmp/cloudflare-ips-v4.txt
+
+# Verify contents
+cat /tmp/cloudflare-ips-v4.txt
+```
+> [!WARNING]
+> Never copy static lists of tutorials from the internet; they may be outdated.
+
+**b. Create a Cloudflare rules script**
+
+Create a script that manages the iptables rules for Cloudflare: 
+```bash
+sudo nano /usr/local/bin/cloudflare-firewall.sh
+```
+```bash
+#!/bin/bash
+
+# -e: for errors; 
+# -u: for non-defined variables; 
+# -o pipefail: for if any pipe cmd fail.
+set -euo pipefail
+
+# =============================================================================
+# Cloudflare-Aware Firewall (IPv4 Only) - v2026
+# =============================================================================
+
+# 1. Definitions
+CLOUDFLARE_IPS_URL="https://www.cloudflare.com/ips-v4"
+CHAIN_NAME="CLOUDFLARE_V4"
+
+echo "Cloudflare-aware Firewall update initialized..."
+
+# 2. Create or Cleaning the Dedicated Chain
+if ! iptables -L "$CHAIN_NAME" >/dev/null 2>&1; then
+    iptables -N "$CHAIN_NAME"
+fi
+iptables -F "$CHAIN_NAME"
+
+# 3. Download IPs and populate Chain
+# Used timeout on curl to avoid script to freeze if the network fails
+IPS=$(curl -s --connect-timeout 10 "$CLOUDFLARE_IPS_URL")
+
+if [ -z "$IPS" ]; then
+    echo "ERROR: Could not get Cloudflare IPs. Aborting to prevent lockout."
+    exit 1
+fi
+
+for ip in $IPS; do
+    iptables -A "$CHAIN_NAME" -s "$ip" -p tcp -m multiport --dports 80,443 -j ACCEPT
+done
+
+# 4. Configure the jump in the INPUT (Ensuring it is unique)
+# First we remove to ensure there is no duplicates at the top
+iptables -D INPUT -p tcp -m multiport --dports 80,443 -j "$CHAIN_NAME" 2>/dev/null || true
+iptables -I INPUT 1 -p tcp -m multiport --dports 80,443 -j "$CHAIN_NAME"
+
+# 5. Apply DROP right after the Cloudflare rule
+# Remove and reinsert at second position (right after allow chain)
+iptables -D INPUT -p tcp -m multiport --dports 80,443 -j DROP 2>/dev/null || true
+iptables -I INPUT 2 -p tcp -m multiport --dports 80,443 -j DROP
+
+echo "[$(date)] IPv4 rules applied successfully."
+echo "Free total IPv4 ranges: $(echo "$IPS" | wc -l)"
+```
+```bash
+# Make it executable
+sudo chmod +x /usr/local/bin/cloudflare-firewall.sh
+```
+
+**c. Apply the rules**
+```bash
+# Executar o script
+sudo /usr/local/bin/cloudflare-firewall.sh
+```
+Expected output:
+```bash
+Cloudflare-aware firewall update initialized...
+[Mon Aug  3 08:32:42 PM WEST 2026] IPv4 Rules applied!
+Free IP ranges: 15
+```
+
+**d. Verify applied rules**
+
+To query the CLOUDFLARE chain, run: 
+```bash
+sudo iptables -L CLOUDFLARE_V4 -n -v
+```
+
+**e. Persist the rules**
+
+So that the rules remain after resets:
+- AlmaLinux:
+```bash
+sudo service iptables save
+```
+Output: `iptables: Saving firewall rules to /etc/sysconfig/iptables: [  OK  ]`
+
+**f. Configure periodic updates (optional)**
+
+Cloudflare IPs may change. Configure a weekly run:
+```bash
+# Adicionar ao cron
+sudo crontab -e
+```
+Add the line: This will run the script every Sunday at 4 AM.
+
+`0 4 * * 0 /usr/local/bin/cloudflare-firewall.sh >> /var/log/cloudflare-firewall.log 2>&1`
+
+#### 3. Final Cloudflare-aware Firewall Structure
+
+In the end, Cloudflare is the only public entry point:
+- The VPS's real IP address is invisible to scanners;
+- The firewall only allows traffic from Cloudflare's official IP addresses on ports 80 and 443;
+- The VPN continues to function normally.
+
+```text
+Chain INPUT (policy DROP)
+│
+├─ ACCEPT: loopback (lo)
+├─ ACCEPT: established, related
+├─ ACCEPT: interface wg0 (VPN)
+├─ CLOUDFLARE: tcp dports 80,443 → dedicated chain
+│   ├─ ACCEPT: 173.245.48.0/20
+│   ├─ ACCEPT: 103.21.244.0/22
+│   ├─ ACCEPT: ... (ranges)
+│   └─ (return for INPUT)
+├─ DROP: tcp dports 80,443 (non-Cloudflare)
+└─ DROP: all the rest (policy)
+```
+
+#### 4. Mandatory Tests
+
+**Test 1: Access via browser**
+
+From any other computer, access via browser
+```text
+http://mysite.com
+```
+
+🔴 Expected result: Cloudflare error 521 or 522. This proves that the proxy is active, the real IP is hidden and the origin is not yet responding (Traefik is not yet configured).
+
+**Test 2: Direct access to the real IP**
+
+From an external machine (not connected to the VPN): 
+```bash
+curl --connect-timeout 5 http://VPS_IP
+```
+
+🔴 Expected result: Timeout. Invisible server.
+
+**Test 3: Check counters**
+
+On the server, run:
+```bash
+# View traffic passing through the rules
+`sudo iptables -L CLOUDFLARE_V4 -n -v`
+```
+
+🟢 **Expected result**: After accessing via Cloudflare, the packet and byte counters should increase.
+
+### Test 4: VPN Access
+
+Connected to the VPN, run: 
+```bash
+curl http://10.10.10.1
+```
+
+🟢 Expected result: Connection works if a server is set. Proves that the block is perimeter-based.
