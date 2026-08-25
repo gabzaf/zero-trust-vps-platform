@@ -50,14 +50,14 @@ flowchart LR
 
 ---
 
-* **Situation**: Instantiating a cloud Linux self-hosted VPS with a public IPv4 immediately creates an exposed administrative surface. Before any application stack, reverse proxy, or public web ingress exists, the server needs a controlled identity model, predictable DNS, and a private administration path.
-* **Task**: Build the first security baseline for the VPS: generate a dedicated SSH identity, create a non-root administrative account, configure Cloudflare DNS records, harden OpenSSH, reduce standing sudo privileges, and establish a WireGuard Site-to-Client tunnel so future administration can move away from the public interface.
+* **Situation**: Instantiating a cloud Linux self-hosted VPS with a public IPv4 immediately creates an exposed administrative surface. Before any application stack, reverse proxy or public web ingress exists, the server needs a controlled identity model, predictable DNS and a private administration path.
+* **Task**: Build the first security baseline for the VPS: generate a dedicated SSH identity, create a non-root administrative account, configure Cloudflare DNS records, harden OpenSSH, reduce standing sudo privileges and establish a WireGuard Site-to-Client tunnel so future administration can move away from the public interface.
 * **Action (Technical Implementation)**:
   1. **SSH Identity Bootstrap**: Generated an `Ed25519` key pair and copied the public key to the future administrative account.
-  2. **System Base Configuration**: Updated the host, installed operational tooling, configured time synchronization, and created a named administrative user with initial `wheel` access for setup.
-  3. **Cloudflare DNS Foundation**: Delegated the domain to Cloudflare and created DNS-only `A` records for the root domain, `srv01`, and `vpn`, keeping records unproxied while the host baseline and VPN endpoint are being established.
-  4. **Administrative Access Hardening**: Disabled remote `root` login, disabled password and interactive SSH authentication, enforced public-key authentication, limited SSH login through `AllowUsers`, and replaced broad `wheel` access with explicit sudoers entries.
-  5. **WireGuard Private Administration**: Deployed a WireGuard Site-to-Client VPN on `10.10.10.0/24`, assigned the server `10.10.10.1`, assigned the admin device `10.10.10.2/32`, and shifted the `srv01` administrative DNS record to the private VPN address.
+  2. **System Base Configuration**: Updated the host, installed operational tooling, configured time synchronization and created a named administrative user with initial `wheel` access for setup.
+  3. **Cloudflare DNS Foundation**: Delegated the domain to Cloudflare and created DNS-only `A` records for the root domain, `srv01` and `vpn`, keeping records unproxied while the host baseline and VPN endpoint are being established.
+  4. **Administrative Access Hardening**: Disabled remote `root` login, disabled password and interactive SSH authentication, enforced public-key authentication, limited SSH login through `AllowUsers` and replaced broad `wheel` access with explicit sudoers entries.
+  5. **WireGuard Private Administration**: Deployed a WireGuard Site-to-Client VPN on `10.10.10.0/24`, assigned the server `10.10.10.1`, assigned the admin device `10.10.10.2/32` and shifted the `srv01` administrative DNS record to the private VPN address.
 * **Result (Current Engineering Proof)**:
   * **Key-only administrative access established**: The operational user can authenticate with the generated SSH key while root and password-based SSH access are removed from the normal remote access path.
   * **Sudo blast radius reduced**: Administrative privilege is expressed through auditable `/etc/sudoers.d/<username>` entries instead of permanent unrestricted `wheel` access.
