@@ -609,7 +609,7 @@ Expected state:
 - Active `wg0` interface;
 - Listed peer;
 - recent handshake after client connection.
-#### 6. Admin Device Configuration (Client)
+### 6. Admin Device Configuration (Client)
 In order for my notebook to "see" the server through the tunnel, I must create a local configuration file.
 
 Create the config file:
@@ -692,7 +692,7 @@ peer: O3Ds/iKeVYnx5YfnAwRqPFvJYw0llPWKcaML22OwL0M=
 1. `latest handshake`: If this line does not appear, the connection was not established. WireGuard does not send error messages; if the keys are wrong, it simply remains silent.
 2. `endpoint`: Shows the actual destination I am currently connected to. It should confirm my VPS server.
 3. `transfer`: Indicates that actual data (such as my ping) has traveled through the tunnel.
-#### 7. Exclusively Private Administration
+### 7. Exclusively Private Administration
 > [!IMPORTANT]
 > Test SSH access through the VPN tunnel on another terminal, while leaving the other connected tab open.
 
@@ -726,7 +726,7 @@ ssh -i ~/.ssh/sua_chave <username>@10.10.10.1
 
 ---
 
-#### 8. Perimeter Firewall and Network Isolation
+### 8. Perimeter Firewall and Network Isolation
 Now I need to configure perimeter defense by blocking all traffic to the server and only allowing requests validated by my VPN tunnel.
 
 After securing identity (SSH) and administrative channel (VPN), the next natural target for attacks is the network surface. Newly created servers are continuously scanned by bots attempting:
@@ -882,3 +882,7 @@ This is the correct baseline state before operating services:
 - The server is an invisible target on the public network.
 - The only port that responds externally is `51820/UDP` (WireGuard).
 - All management is done via the secure `wg0` interface.
+
+---
+
+### 9. Active Monitoring and Incident Response
