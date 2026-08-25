@@ -724,4 +724,161 @@ From now on, this will be my only way to manage the server from the next steps o
 ssh -i ~/.ssh/sua_chave <username>@10.10.10.1
 ```
 
+---
 
+#### 8. Perimeter Firewall and Network Isolation
+Now I need to configure perimeter defense by blocking all traffic to the server and only allowing requests validated by my VPN tunnel.
+
+After securing identity (SSH) and administrative channel (VPN), the next natural target for attacks is the network surface. Newly created servers are continuously scanned by bots attempting:
+- connections on standard ports (22, 80, 443);
+- service fingerprinting;
+- exploitation of services not yet installed.
+
+At this point, no public services should exist. Here:
+- I do not protect the application;
+- I do not publish services;
+- I do not integrate Cloudflare as a proxy.
+- I protect raw network traffic, before any upper layer.
+
+---
+
+**Why a Firewall?**
+
+Without a firewall:
+- a VPN becomes just "another access point"
+- future services may leak
+- exposure returns due to carelessness
+
+I will implement a total isolation firewall, whose objective is to make the server disappear from the public internet.
+
+**Architectural Principle**
+
+Blacklist is a reaction. Here, everything coming from the public internet will be blocked by default so that nothing is exposed. As of this moment:
+- Cloudflare is DNS Only
+- No HTTP/HTTPS services are published
+- Reverse proxy does not yet exist
+- Administration occurs exclusively through VPN
+
+Deliberately, EVERYTHING will be blocked:
+
+❌ ports 22 (SSH) and 80/443 (HTTP/HTTPS) to the public internet
+
+❌ any public service
+
+❌ any direct external access to my VPS server's IP address
+
+Maintaining only the bare minimum:
+
+🟢 Loopback to ensure internal system communication
+
+🟢 Connections established to maintain legitimate responses to traffic initiated by the server
+
+🟢 Private administration of internal VPN traffic coming from the WireGuard interface (wg0)
+
+Ports will not be opened "for later use". Open them when necessary!
+
+##### Chosen Tool
+Iptables is a tool for filtering and managing network traffic in Linux, allowing me to control which ports can be accessed and by whom.
+
+I will use iptables for 3 reasons:
+- **Predictability**: I see exactly the rule that the Kernel executes.
+- **Performance**: Packet processing without the overhead of Python/Ruby services.
+- **Portability**: The same script works on Ubuntu, AlmaLinux, Debian or Rocky Linux.
+Therefore, I avoid abstraction layers. No UFW, firewalld or magic panels here.
+
+2. **Secure Firewall Configuration** (whitelist before drop)
+
+Clears all existing rules to start from scratch:
+```bash
+sudo iptables -F
+```
+
+To understand and assemble commands in `iptables`, the rule is to think of a logical structure composed of 3 questions: Where to apply?, What is the filter/condition? and What to do?
+
+Loopback (mandatory):
+```bash
+sudo iptables -A INPUT -i lo -j ACCEPT
+```
+- `lo -j ACCEPT`: Allows traffic on the Loopback interface (localhost). This is essential for internal services (such as the database communicating with the application) to function. Without it, the system will crash.
+
+**Connections Established**
+```bash
+sudo iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+```
+
+- `m conntrack --ctstate ESTABLISHED,RELATED`: Ensures that if the server has initiated a conversation (e.g., `apt update`), the response from the internet is allowed back.
+
+**Administrative VPN**
+```bash
+# Allows WireGuard VPN access (UDP port 51820) via the public internet
+sudo iptables -A INPUT -p udp --dport 51820 -j ACCEPT
+```
+```bash
+# Allows ALL traffic coming from within the VPN interface
+sudo iptables -A INPUT -i wg0 -j ACCEPT
+```
+- `dport 51820`: Allows WireGuard VPN (UDP port 51820) to enter from the public internet. It is the only port that will remain "open" to the world, allowing me to connect the tunnel.
+- `i wg0`: Allows ALL traffic coming from within the VPN interface. Since I am already protected by VPN encryption, I have fully opened the wg0 interface. This allows SSH, Pings and future administrative services without new firewall rules.
+
+**Default policy** (deny all)
+```bash
+# Define the DROP (total blocking) policy for inbound and outbound traffic:
+sudo iptables -P INPUT DROP
+sudo iptables -P FORWARD DROP
+```
+```bash
+# Allows the server to send data to the internet (essential for updates):
+sudo iptables -P OUTPUT ACCEPT
+```
+- `INPUT DROP`: Nothing enters without explicit permission.
+- `FORWARD DROP`: No lateral routing.
+- `OUTPUT ACCEPT`: The server can access the internet normally (updates, DNS, APIs).
+
+3. **Persistence of Firewall Rules**
+
+Iptables does not retain rules after a reboot. To ensure my settings are automatically applied when the system starts, I will need to install the `iptables-services` packages, which allow me to save and automatically load the rules:
+```bash
+sudo dnf install -y iptables-services
+sudo systemctl enable iptables
+```
+After I config the rules, I save them so that `iptables` can apply them whenever the system is restarted.
+```bash
+sudo service iptables save
+```
+
+4. **Checking the Iptables Rules**
+
+To verify that the rules have been configured correctly, I can list all current rules using the command:
+```bash
+sudo iptables -L
+```
+
+5. **Mandatory Tests**
+Test server's perimeter now:
+
+5.1. **Test via VPN** (expected success)
+```bash
+ssh -i ~/.ssh/my_key <username>@10.10.10.1
+```
+🟢 Must log in instantly.
+
+5.2. **Test via Public IP** (Expected Blocking):
+```bash
+sudo wg-quick down vps-admin
+```
+```bash
+ssh -i ~/.ssh/my_key <username>@srv01.my_site.com
+```
+🔴 It should remain "hanging" until it times out.
+
+5.3 **Scan test via public access outside the VPN** (invisibility):
+
+- Try accessing any service via browser using the public IP address. The browser should report that the site is inaccessible (not responding) or using curl.
+```bash
+curl http://srv01.mysite.com
+```
+#### Expected End State
+This is the correct baseline state before operating services:
+- The server is an invisible target on the public network.
+- The only port that responds externally is `51820/UDP` (WireGuard).
+- All management is done via the secure `wg0` interface.
