@@ -33,7 +33,7 @@ Automated attacks exploit exactly three recurring vulnerabilities:
 - Authentication via password exposed to the internet;
 - Permissive or implicit configuration of sshd.
 
-<details open>
+<details>
 <summary><b>▶ View config — sshd_config hardening</b></summary>
 
 Create or update `/etc/ssh/sshd_config.d/01-hardening.conf`:
@@ -84,7 +84,7 @@ With root blocked via SSH and `<username>` as the only access to the server, unr
 
 The principle adopted: `<username>` only has standard access, and permissions are granted exactly as required. Nothing more.
 
-<details open>
+<details>
 <summary><b>▶ View commands — granular sudo restriction</b></summary>
 
 Before removing it from the group, I create a dedicated `sudoers` file for `<username>`. If I remove it first, I lose the ability to execute any privileged commands.
@@ -267,7 +267,7 @@ The new access flow after completing this module:
 #### 1. Connect via SSH
 
 #### 2. WireGuard Installation
-<details open>
+<details>
 <summary><b>▶ View commands — WireGuard installation</b></summary>
 
 ```bash
@@ -279,7 +279,7 @@ sudo dnf install -y wireguard-tools
 #### 3. Server Side
 
 ##### 3.1 Keys Generation
-<details open>
+<details>
 <summary><b>▶ View commands — server key generation</b></summary>
 
 On the server, generate the key pair:
@@ -301,7 +301,7 @@ Keys generated:
 </details>
 
 ##### 3.2 VPN Interface Configuration `wg0`
-<details open>
+<details>
 <summary><b>▶ View config — wg0.conf (server)</b></summary>
 
 Create the file `/etc/wireguard/wg0.conf`:
@@ -331,7 +331,7 @@ PostDown = sysctl -w net.ipv4.ip_forward=0
 ##### 3.3 Firewall Configuration (Server)
 WireGuard uses UDP 51820 by default. Even with the interface correctly configured, `firewalld` will silently drop this traffic unless explicitly allowed — and because WireGuard doesn't send error responses, this failure is invisible: no errors, just zero handshake and zero bytes received.
 
-<details open>
+<details>
 <summary><b>▶ View commands — opening UDP port 51820</b></summary>
 
 Open the port:
@@ -348,7 +348,7 @@ I should see `51820/udp` listed under ports:.
 #### 4. Client Side
 In addition to generating the keys, I need the software to run the tunnel — otherwise my computer wouldn't know how to "speak" the WireGuard protocol or create the virtual network interface.
 
-<details open>
+<details>
 <summary><b>▶ View commands — client installation</b></summary>
 
 ```bash
@@ -361,7 +361,7 @@ sudo apt upgrade -y && sudo apt install wireguard-tools
 > [!WARNING]
 > **Attention**: Do not generate client keys within the server. Generate them on my local machine so my private key never touches the network.
 
-<details open>
+<details>
 <summary><b>▶ View commands — client key generation</b></summary>
 
 On my local computer, generate the client keys by running:
@@ -374,7 +374,7 @@ Generated keys:
 </details>
 
 ##### 4.2 Client Registration on Server
-<details open>
+<details>
 <summary><b>▶ View config — [Peer] block on the server</b></summary>
 
 Now that I have the `client.pub`, I go back to the server and add the `[Peer]` block to the end of the `/etc/wireguard/wg0.conf` file:
@@ -390,7 +390,7 @@ Each customer receives a fixed IP and a `/32` block.
 </details>
 
 #### 5. Start the VPN
-<details open>
+<details>
 <summary><b>▶ View commands — bringing up the wg0 interface</b></summary>
 
 In the server, start the interface and ensure it goes up during boot:
@@ -414,7 +414,7 @@ Expected state: active `wg0` interface, listed peer, recent handshake after clie
 ### 6. Admin Device Configuration (Client)
 In order for my notebook to "see" the server through the tunnel, I must create a local configuration file.
 
-<details open>
+<details>
 <summary><b>▶ View config — vps-admin.conf (client)</b></summary>
 
 Create the config file:
@@ -449,7 +449,7 @@ PersistentKeepalive = 25
 #### Tunnel Lifecycle (connect and disconnect)
 Unlike background services, administrative VPN should be used on demand.
 
-<details open>
+<details>
 <summary><b>▶ View commands — connect/disconnect and diagnostics</b></summary>
 
 🟢 **To connect via the terminal**:
@@ -514,7 +514,7 @@ peer: O3Ds/iKeVYnx5YfnAwRqPFvJYw0llPWKcaML22OwL0M=
 
 Instead of accessing via IP, I create an official DNS record for internal management — the Split-Horizon DNS concept (pointing the public DNS name to a private IP of my VPN, `10.10.10.1`). This ensures traffic leaves my laptop, enters the VPN tunnel and goes directly to the server, without going around the public internet.
 
-<details open>
+<details>
 <summary><b>▶ View steps — Split-Horizon DNS and validation</b></summary>
 
 Go to the Cloudflare DNS panel and CHANGE the record for the previously created administrative subdomain, from my VPS's public IP to my VPN's local IP:

@@ -42,7 +42,7 @@ At the end:
 
 #### 1. Cloudflare Proxy Activation
 
-<details open>
+<details>
 <summary><b>▶ View steps — enabling proxy and configuring records</b></summary>
 
 In the Cloudflare panel, access **DNS → Records** and configure the records as follows:
@@ -80,7 +80,7 @@ The `srv01` record should remain **DNS Only (grayed out)**. It is used for direc
 #### 2. Adjust Local Firewall to Cloudflare-Aware
 Do not open ports 80/443 to the world. I will only authorize official Cloudflare IPs and make the local firewall on my VPS server a Cloudflare-aware firewall.
 
-<details open>
+<details>
 <summary><b>▶ View script — Cloudflare-aware firewall (iptables)</b></summary>
 
 **a. Consult the official Cloudflare IPs**
@@ -188,7 +188,7 @@ Chain INPUT (policy DROP)
 ```
 
 #### 4. Mandatory Tests
-<details open>
+<details>
 <summary><b>▶ View tests — validating origin invisibility</b></summary>
 
 **Test 1: Access via browser**
@@ -278,7 +278,7 @@ There is **only one valid choice for production**: **Full (Strict)**.
 ```
 
 #### 1. Generate the Cloudflare Origin Certificate
-<details open>
+<details>
 <summary><b>▶ View steps — issuing the certificate in the dashboard</b></summary>
 
 1. Go to **SSL/TLS → Origin Server**.
@@ -292,7 +292,7 @@ There is **only one valid choice for production**: **Full (Strict)**.
 </details>
 
 #### 2. Installing the certificate on the origin (VPS)
-<details open>
+<details>
 <summary><b>▶ View commands — certificate installation and validation</b></summary>
 
 On the server (via VPN):
@@ -333,7 +333,7 @@ sudo openssl rsa -noout -modulus -in /etc/ssl/cloudflare/origin.key | openssl md
 </details>
 
 #### 3. Enabling Full (Strict) in Cloudflare
-<details open>
+<details>
 <summary><b>▶ View steps — enabling Full (Strict) and checking files</b></summary>
 
 In the panel:

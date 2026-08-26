@@ -73,7 +73,7 @@ I will use `iptables` for 3 reasons:
 
 Therefore, I avoid abstraction layers. No UFW, firewalld or magic panels here.
 
-<details open>
+<details>
 <summary><b>▶ View commands — iptables rules (whitelist before drop)</b></summary>
 
 Clears all existing rules to start from scratch:
@@ -120,7 +120,7 @@ sudo iptables -P OUTPUT ACCEPT
 
 #### Persistence of Firewall Rules
 
-<details open>
+<details>
 <summary><b>▶ View commands — persisting rules across reboot</b></summary>
 
 `iptables` does not retain rules after a reboot. To ensure my settings are automatically applied when the system starts, install `iptables-services`:
@@ -140,7 +140,7 @@ sudo iptables -L
 
 #### Mandatory Tests
 
-<details open>
+<details>
 <summary><b>▶ View tests — perimeter validation</b></summary>
 
 **5.1. Test via VPN** (expected success)
@@ -192,7 +192,7 @@ The strategy is simple and verifiable layers:
 No heavy SIEM, no external SaaS at this stage.
 
 #### 1. Telemetry Preparation and Verification
-<details open>
+<details>
 <summary><b>▶ View commands — checking sshd LogLevel</b></summary>
 
 Confirm that SSH is sending detailed data to the log system:
@@ -212,7 +212,7 @@ sudo systemctl reload sshd
 #### 2. Configure Intrusion Detection
 Fail2ban is a tool that reads system logs and upon detecting an attack pattern, executes a blocking command in `iptables`.
 
-<details open>
+<details>
 <summary><b>▶ View commands — Fail2ban installation and configuration</b></summary>
 
 **a. Fail2ban Installation**
@@ -280,7 +280,7 @@ sudo systemctl restart fail2ban
 </details>
 
 #### 3. Automatic Response Validation
-<details open>
+<details>
 <summary><b>▶ View commands — general status and SSH jail</b></summary>
 
 View general status:
@@ -301,7 +301,7 @@ I should see banned IPs (if any) and active counters.
 </details>
 
 #### 4. Controlled Tests (Mandatory)
-<details open>
+<details>
 <summary><b>▶ View tests — simulating an attack and validating the ban</b></summary>
 
 **Test 1: Invalid Attempt (from outside the VPN)**

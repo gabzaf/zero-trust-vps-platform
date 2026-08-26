@@ -21,7 +21,7 @@
 ### 1. Generate SSH Key Pair
 To generate a modern, secure SSH key compatible with virtually any VPS provider, the recommended standard is **Ed25519**.
 
-<details open>
+<details>
 <summary><b>▶ View commands — SSH key generation</b></summary>
 
 Open the terminal and type the following command:
@@ -51,7 +51,7 @@ cat ~/.ssh/my_key.pub
 ### 2. System Base Configuration
 This section explains how to configure Linux OS base for secure and predictable administration before installing any stack.
 
-<details open>
+<details>
 <summary><b>▶ View commands — base packages and root user</b></summary>
 
 **Initial update and base packages**
@@ -85,7 +85,7 @@ This password will be used whenever I need to log in as `root`.
 #### a. Create a user with sudo
 The first step is to create a security layer by creating a regular user with administrative permissions.
 
-<details open>
+<details>
 <summary><b>▶ View commands — creating the admin user</b></summary>
 
 Create a dedicated user (e.g., ops, admin, or any other name) and grant superuser privileges.
@@ -118,7 +118,7 @@ Therefore, I have to ensure I can access my server without root using an SSH pub
 > [!IMPORTANT]
 > **Note on key reuse**: Using the same SSH key for `root` and the administrative user works, but reduces the security isolation between the two accounts, because if the key is leaked, both accesses are compromised together. To ensure complete security, consider generating a dedicated key per user.
 
-<details open>
+<details>
 <summary><b>▶ View commands — copying and testing the key</b></summary>
 
 On my computer (or wherever my SSH public key was generated or is stored), run the command below to copy the public key to my VPS server and make it available to the newly created `<username>` user:
@@ -158,7 +158,7 @@ In Cloudflare, each DNS record can operate in two modes:
 
 **b. Adding the domain to Cloudflare**
 
-<details open>
+<details>
 <summary><b>▶ View steps — adding the domain and changing nameservers</b></summary>
 
 With the domain registered, the next step is to use Cloudflare to manage the DNS. This involves adding the domain to a Cloudflare account and changing the nameservers at the registrar to point to Cloudflare.
@@ -183,7 +183,7 @@ dig NS mysite.com +short
 The expected result is the two Cloudflare nameservers (e.g., `dana.ns.cloudflare.com`, `nick.ns.cloudflare.com`). As long as the old registrar nameservers are still shown, propagation is not yet complete.
 
 #### DNS Configuration in Cloudflare
-<details open>
+<details>
 <summary><b>▶ View steps — creating the A records</b></summary>
 
 With the domain active in Cloudflare (nameservers propagated), add the necessary DNS records in the **DNS > Records** tab:
