@@ -31,8 +31,25 @@
       - [4.1 Keys Generation](#41-keys-generation)
       - [4.2 Client Registration on Server](#42-client-registration-on-server)
     - [5. Start the VPN](#5-start-the-vpn)
-    - [6. Admin Device Configuration (Client)](#6-admin-device-configuration-client)
-    - [7. Exclusively Private Administration](#7-exclusively-private-administration)
+  - [6. Admin Device Configuration (Client)](#6-admin-device-configuration-client)
+  - [7. Exclusively Private Administration](#7-exclusively-private-administration)
+  - [8. Perimeter Firewall and Network Isolation](#8-perimeter-firewall-and-network-isolation)
+  - [9. Active Monitoring and Incident Response](#9-active-monitoring-and-incident-response)
+    - [Defense Architecture](#defense-architecture)
+    - [1. Telemetry Preparation and Verification](#1-telemetry-preparation-and-verification)
+    - [2. Configure Intrusion Detection](#2-configure-intrusion-detection)
+    - [3. Automatic Response Validation](#3-automatic-response-validation)
+    - [4. Controlled Tests (Mandatory)](#4-controlled-tests-mandatory)
+  - [10. Cloudflare Proxy and Infrastructure Obfuscation](#10-cloudflare-proxy-and-infrastructure-obfuscation)
+    - [1. Cloudflare Proxy Activation](#1-cloudflare-proxy-activation)
+    - [2. Adjust Local Firewall to Cloudflare-Aware](#2-adjust-local-firewall-to-cloudflare-aware)
+    - [3. Final Cloudflare-aware Firewall Structure](#3-final-cloudflare-aware-firewall-structure)
+    - [4. Mandatory Tests](#4-mandatory-tests)
+  - [11. End-to-end Encryption with Full (Strict) SSL](#11-end-to-end-encryption-with-full-strict-ssl)
+    - [1. Generate the Cloudflare Origin Certificate](#1-generate-the-cloudflare-origin-certificate)
+    - [2. Installing the certificate on the origin (VPS)](#2-installing-the-certificate-on-the-origin-vps)
+    - [3. Enabling Full (Strict) in Cloudflare](#3-enabling-full-strict-in-cloudflare)
+    - [4. Verify files on the server](#4-verify-files-on-the-server)
 
 ---
 
@@ -1073,7 +1090,7 @@ ssh -i ~/.ssh/my_key ops@10.10.10.1
 - normal access;
 - no impact on VPN.
 
-### Expected final state
+#### Expected final state
 In the current configuration, Fail2ban will serve as a "second line of defense" if I need to open any public ports in the future or to protect the WireGuard port itself (UDP 51820) against packet flooding.
 
 Therefore, at this point:
@@ -1310,7 +1327,7 @@ On the server, run:
 
 🟢 **Expected result**: After accessing via Cloudflare, the packet and byte counters should increase.
 
-### Test 4: VPN Access
+**Test 4: VPN Access**
 
 Connected to the VPN, run: 
 ```bash
@@ -1413,7 +1430,7 @@ Here is the complete diagram of the adopted architecture:
     MODE: SSL FULL (STRICT) <--------------------------------------+
 ```
 
-### 1. Generate the Cloudflare Origin Certificate
+#### 1. Generate the Cloudflare Origin Certificate
 
 One of the great advantages of Cloudflare is the free SSL/TLS for my domain, without needing to purchase separate certificates.
 
@@ -1426,7 +1443,7 @@ One of the great advantages of Cloudflare is the free SSL/TLS for my domain, wit
 > [!IMPORTANT]
 > Cloudflare will display the **Origin Certificate** (CRT) and the **Private Key* (KEY) only once.
 
-### 2. Installing the certificate on the origin (VPS)
+#### 2. Installing the certificate on the origin (VPS)
 
 On the server (via VPN):
 #### a. Create an isolated and protected directory
@@ -1471,13 +1488,13 @@ sudo openssl rsa -noout -modulus -in /etc/ssl/cloudflare/origin.key | openssl md
 ```
 🟢 Expected result: The MD5 hashes should be identical. If they differ, the key does not match the certificate. I copied something incorrectly.
 
-### 4. Enabling Full (Strict) in Cloudflare
+#### 3. Enabling Full (Strict) in Cloudflare
 
 In the panel:
 - SSL/TLS → Overview
 - Select Full (Strict)
 
-### Verify files on the server
+#### 4. Verify files on the server
 
 Confirm that the files exist and have the correct permissions: 
 ```bash

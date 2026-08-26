@@ -70,7 +70,7 @@ Each case below documents a real engineering decision behind this platform, foll
 
 | Case | Focus Area | Key Technologies | Status |
 | :--- | :--- | :--- | :---: |
-| **[Case 01](./cases/case-01-perimeter-and-edge-security.md)** | Perimeter Hardening, Edge Security & Zero-Trust Admin | Cloudflare WAF, WireGuard, UFW/iptables, SSH Hardening | 🟢 Published |
+| **[Case 01](./cases/case-01-perimeter-foundation-and-zero-trust-admin/00-overview.md)** | Perimeter Hardening, Edge Security & Zero-Trust Admin | Cloudflare WAF, WireGuard, iptables, Fail2ban, SSH Hardening | 🟢 Published |
 | *More cases coming soon* | — | — | 🟡 Planned |
 
 ---
