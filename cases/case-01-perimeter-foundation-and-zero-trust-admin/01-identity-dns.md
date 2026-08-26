@@ -51,8 +51,6 @@ cat ~/.ssh/my_key.pub
 ### 2. System Base Configuration
 This section explains how to configure Linux OS base for secure and predictable administration before installing any stack.
 
----
-
 <details>
 <summary><b>▶ View commands — base packages and root user</b></summary>
 
@@ -86,8 +84,6 @@ This password will be used whenever I need to log in as `root`.
 
 #### a. Create a user with sudo
 The first step is to create a security layer by creating a regular user with administrative permissions.
-
----
 
 <details>
 <summary><b>▶ View commands — creating the admin user</b></summary>
@@ -196,8 +192,6 @@ With the domain active in Cloudflare (nameservers propagated), add the necessary
 2. **Create an A record** pointing `srv01` to the VPS IP address. Proxy status: **DNS Only** (Gray Cloud ☁️).
 3. **Create an A record** pointing `vpn` to the VPS IP address. Proxy status: **DNS Only** (Gray Cloud ☁️).
 </details>
-
----
 
 After adding the records, my DNS in Cloudflare will have:
 

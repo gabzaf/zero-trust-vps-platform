@@ -260,13 +260,13 @@ flowchart LR
 I use the WireGuard protocol for Site-to-Client (S2C) VPN implementation. It is minimalist in code, meaning less surface area for vulnerabilities. It comes with modern encryption via **Curve25519** and has **UDP stealth** behavior that does not respond to port scans. To an external scanner, port 51820/UDP is indistinguishable from a blocked port.
 
 The new access flow after completing this module:
-5.1. Activate the VPN tunnel on my computer.
-5.2. Access the server via private IP or internal hostname.
-5.3. The firewall will block any access attempts that do not originate from the tunnel.
+- Activate the VPN tunnel on my computer.
+- Access the server via private IP or internal hostname.
+- The firewall will block any access attempts that do not originate from the tunnel.
 
-#### 1. Connect via SSH
+#### 5.1. Connect via SSH
 
-#### 2. WireGuard Installation
+#### 5.2. WireGuard Installation
 <details>
 <summary><b>▶ View commands — WireGuard installation</b></summary>
 
@@ -276,9 +276,9 @@ sudo dnf install -y wireguard-tools
 ```
 </details>
 
-#### 3. Server Side
+#### 5.3. Server Side
 
-##### 3.1 Keys Generation
+##### 5.3.1 Keys Generation
 <details>
 <summary><b>▶ View commands — server key generation</b></summary>
 
@@ -300,7 +300,7 @@ Keys generated:
 - `server.pub`: Server public identity
 </details>
 
-##### 3.2 VPN Interface Configuration `wg0`
+##### 5.3.2 VPN Interface Configuration `wg0`
 <details>
 <summary><b>▶ View config — wg0.conf (server)</b></summary>
 
@@ -328,7 +328,7 @@ PostDown = sysctl -w net.ipv4.ip_forward=0
 > - `wg0` does not automatically expose services.
 </details>
 
-##### 3.3 Firewall Configuration (Server)
+##### 5.3.3 Firewall Configuration (Server)
 WireGuard uses UDP 51820 by default. Even with the interface correctly configured, `firewalld` will silently drop this traffic unless explicitly allowed — and because WireGuard doesn't send error responses, this failure is invisible: no errors, just zero handshake and zero bytes received.
 
 <details>
@@ -345,7 +345,7 @@ sudo firewall-cmd --list-all
 I should see `51820/udp` listed under ports:.
 </details>
 
-#### 4. Client Side
+#### 5.4. Client Side
 In addition to generating the keys, I need the software to run the tunnel — otherwise my computer wouldn't know how to "speak" the WireGuard protocol or create the virtual network interface.
 
 <details>
@@ -357,7 +357,7 @@ sudo apt upgrade -y && sudo apt install wireguard-tools
 ```
 </details>
 
-##### 4.1 Keys Generation
+##### 5.4.1 Keys Generation
 > [!WARNING]
 > **Attention**: Do not generate client keys within the server. Generate them on my local machine so my private key never touches the network.
 
@@ -373,7 +373,7 @@ Generated keys:
 - `client.pub`: My VPN public key. This goes in the server's `wg0.conf` file to be registered on the server
 </details>
 
-##### 4.2 Client Registration on Server
+##### 5.4.2 Client Registration on Server
 <details>
 <summary><b>▶ View config — [Peer] block on the server</b></summary>
 
@@ -391,7 +391,7 @@ Each customer receives a fixed IP and a `/32` block.
 
 ---
 
-#### 5. Start the VPN
+#### 5.5. Start the VPN
 <details>
 <summary><b>▶ View commands — bringing up the wg0 interface</b></summary>
 
