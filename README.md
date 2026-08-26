@@ -77,14 +77,13 @@ Each case documents engineering decisions and trade-offs behind this platform fo
 ## Repository Structure
 
 ```text
-├── cases/
-│   └── case-01-perimeter-foundation-and-zero-trust-admin/
-│       ├── 00-overview.md             # S.T.A.R. breakdown, architecture & phase index
-│       ├── 01-identity-dns.md         # Phase 1: Ed25519 identity, OS baseline & DNS delegation
-│       ├── 02-ssh-vpn-hardening.md    # Phase 2: OpenSSH hardening, sudo scoping & WireGuard S2C
-│       ├── 03-firewall-monitoring.md  # Phase 3: iptables Default-DROP firewall & Fail2ban
-│       └── 04-cloudflare-tls.md       # Phase 4: Cloudflare Proxy, Origin CA & Full (Strict) SSL
-└── docs/
-    └── runbooks/
-        └── 02-wireguard-s2c-vpn-setup.md # Operational runbook for WireGuard administration
+.
+├── README.md                          # High-level architecture & case index
+└── cases/
+    └── case-01-perimeter-foundation-and-zero-trust-admin/
+        ├── 00-overview.md             # S.T.A.R. breakdown, architecture & phase index
+        ├── 01-identity-dns.md         # Phase 1: Ed25519 identity, OS baseline & DNS delegation
+        ├── 02-ssh-vpn-hardening.md    # Phase 2: OpenSSH hardening, sudo scoping & WireGuard S2C
+        ├── 03-firewall-monitoring.md  # Phase 3: iptables Default-DROP firewall & Fail2ban
+        └── 04-cloudflare-tls.md       # Phase 4: Cloudflare Proxy, Origin CA & Full (Strict) SSL
 ```
