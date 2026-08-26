@@ -1,5 +1,5 @@
 # zero-trust-vps-platform
-### *Zero-Trust Perimeter, Cloudflare Edge, Reverse Proxy, Container Isolation & Centralized Observability*
+### *Cloudflare Edge, Zero-Trust Perimeter, Firewall, Reverse Proxy, Container Isolation & Centralized Observability*
 
 [![Linux](https://img.shields.io/badge/Linux-%20AlmaLinux-E95420?logo=linux&logoColor=white)](#)
 [![Security](https://img.shields.io/badge/Security-Zero--Trust%20Perimeter-success?logo=shield&logoColor=white)](#)
