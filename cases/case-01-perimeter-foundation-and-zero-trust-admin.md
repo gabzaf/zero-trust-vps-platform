@@ -1413,4 +1413,79 @@ Here is the complete diagram of the adopted architecture:
     MODE: SSL FULL (STRICT) <--------------------------------------+
 ```
 
+### 1. Generate the Cloudflare Origin Certificate
+
+One of the great advantages of Cloudflare is the free SSL/TLS for my domain, without needing to purchase separate certificates.
+
+1. Go to **SSL/TLS → Origin Server**.
+2. Click on **Create Certificate**.
+3. Keep the default settings (RSA 2048 or ECDSA).
+4. Make sure the hostnames cover: `mysite.com` and `*.mysite.com`.
+5. Select a validity of 15 years.
+
+> [!IMPORTANT]
+> Cloudflare will display the **Origin Certificate** (CRT) and the **Private Key* (KEY) only once.
+
+### 2. Installing the certificate on the origin (VPS)
+
+On the server (via VPN):
+#### a. Create an isolated and protected directory
+```bash
+sudo mkdir -p /etc/ssl/cloudflare
+sudo chmod 700 /etc/ssl/cloudflare
+```
+
+#### b. Create the files
+Create the certificate file:
+> [!TIP]
+> Copy and paste the contents of the **Origin Certificate** from the panel and save it.
+```bash
+sudo nano /etc/ssl/cloudflare/origin.crt
+```
+Create the private key file:
+> [!TIP]
+> Copy and paste the contents of the **Private Key** from the panel and save it.
+```bash
+sudo nano /etc/ssl/cloudflare/origin.key
+```
+Finally, apply restrictive permissions:
+```bash
+#Secure the files (Only root will have read access)
+sudo chown root:root /etc/ssl/cloudflare/*
+sudo chmod 600 /etc/ssl/cloudflare/*
+```
+#### c. Validate the installation
+Verify that the certificate was installed correctly:
+```bash
+sudo openssl x509 -in /etc/ssl/cloudflare/origin.crt -text -noout | head -20
+```
+🟢 Expected output: certificate information including `Issuer: ... Cloudflare` and the covered domains.
+
+Now, verify that the private key matches the certificate:
+```bash
+# Certificate hash
+sudo openssl x509 -noout -modulus -in /etc/ssl/cloudflare/origin.crt | openssl md5
+
+# Key hash
+sudo openssl rsa -noout -modulus -in /etc/ssl/cloudflare/origin.key | openssl md5
+```
+🟢 Expected result: The MD5 hashes should be identical. If they differ, the key does not match the certificate. I copied something incorrectly.
+
+### 4. Enabling Full (Strict) in Cloudflare
+
+In the panel:
+- SSL/TLS → Overview
+- Select Full (Strict)
+
+### Verify files on the server
+
+Confirm that the files exist and have the correct permissions: 
+```bash
+ls -la /etc/ssl/cloudflare/
+```
+```bash
+drwx------ 2 root root 4096 ... .
+-rw------- 1 root root ... origin.crt
+-rw------- 1 root root ... origin.key
+```
 
