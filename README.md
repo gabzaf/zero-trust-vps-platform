@@ -23,7 +23,7 @@ graph TD
         CF_WAF["Cloudflare WAF, DDoS and Edge TLS"]
     end
 
-    subgraph Host_Firewall["Host Firewall Perimeter - UFW iptables"]
+    subgraph Host_Firewall["Host Firewall Perimeter - iptables"]
         FW_CF["ALLOW: Cloudflare IPs Only - Ports 80 and 443"]
         FW_WG["ALLOW: WireGuard UDP - Port 51820"]
         FW_DROP["DEFAULT DROP: All Other WAN Inbound Traffic"]
@@ -66,22 +66,29 @@ graph TD
 
 ## Engineering Case Studies (S.T.A.R. Format)
 
-Each case below documents a real engineering decision behind this platform, following the **Situation, Task, Action, Result** format, the goal is to show *what* was deployed, *why* specific trade-offs were made and how they were validated.
+Each case documents engineering decisions and trade-offs behind this platform following the **Situation, Task, Action, Result** methodology.
 
 | Case | Focus Area | Key Technologies | Status |
 | :--- | :--- | :--- | :---: |
-| **[Case 01](./cases/case-01-perimeter-foundation-and-zero-trust-admin/00-overview.md)** | Perimeter Hardening, Edge Security & Zero-Trust Admin | Cloudflare WAF, WireGuard, iptables, Fail2ban, SSH Hardening | 🟢 Published |
-| *More cases coming soon* | — | — | 🟡 Planned |
+| **[Case 01](./cases/case-01-perimeter-foundation-and-zero-trust-admin/00-overview.md)** | VPS Perimeter Foundation & Zero-Trust Administration | Cloudflare Proxy, WireGuard, iptables, Fail2ban, SSH Hardening | 🟢 Published |
+| **Case 02** | Edge Ingress, WAF Rules & Traefik v3 Reverse Proxy | Cloudflare WAF, Traefik v3, Origin CA, Strict TLS | 🟡 Planned |
+| **Case 03** | Container Platform Hardening & Network Isolation | Docker CE, Non-Root Containers, Isolated DB Bridge | 🟡 Planned |
+| **Case 04** | Centralized Observability & Telemetry Stack | Grafana, Loki, Promtail, Netdata, Cockpit | 🟡 Planned |
+| **Case 05** | Automated Encrypted Backups & Disaster Recovery | Restic, Systemd Timers, Remote Object Storage | 🟡 Planned |
 
 ---
 
-## Security Posture & Defense-in-Depth Matrix
+## Repository Structure
 
-| Layer | Threat Vector | Implemented Defense & Controls | Validation Method |
-| :--- | :--- | :--- | :--- |
-| **Identity & Access** | SSH Password Brute-force & Credential Stuffing | Ed25519 asymmetric keys exclusively, PermitRootLogin no, PasswordAuthentication no, explicit AllowUsers whitelist. | `ssh -o PreferredAuthentications=password` fails instantly without password prompt. |
-| **Network Perimeter** | Port Scanning & Direct Host Fingerprinting | Host firewall in **Default-DROP** mode. Port 22 blocked entirely from WAN; ports 80/443 restricted to Cloudflare CIDRs only. | Active nmap -sS -Pn -p- from non-Cloudflare IPs confirms no unintended TCP ports are open/responsive. |
-| **Administrative Plane** | Unencrypted remote management & rogue admin probes | **WireGuard Site-to-Client VPN**. SSH & internal tools bind exclusively to the VPN interface (`10.10.10.x`). | Direct WAN connection to management ports times out; access succeeds exclusively when the WireGuard tunnel `wg0` is up. |
-| **Edge / Web Ingress** | DDoS, Injections Attacks, Scrapers, Cloudflare Bypass | Cloudflare Proxy (Orange Cloud) + WAF rules + host firewall whitelist restricting 80/443 to Cloudflare CIDRs. | Direct `curl https://<VPS_IP>` times out/drops. Domain queries pass cleanly. |
-| **Application Layer** | Container breakout & lateral network movement | Non-root containers, read-only root filesystem where applicable, segmented Docker bridge networks (`internal_db` isolated from gateway). | Compromised web container cannot reach other tenants or the DB network's gateway. |
-| **Data & State** | Data loss & configuration drift | Atomic `/srv` directory mapping, named persistent volumes, snapshot baseline before changes. | Point-in-time rollback validated against snapshot baseline. |
+```text
+├── cases/
+│   └── case-01-perimeter-foundation-and-zero-trust-admin/
+│       ├── 00-overview.md             # S.T.A.R. breakdown, architecture & phase index
+│       ├── 01-identity-dns.md         # Phase 1: Ed25519 identity, OS baseline & DNS delegation
+│       ├── 02-ssh-vpn-hardening.md    # Phase 2: OpenSSH hardening, sudo scoping & WireGuard S2C
+│       ├── 03-firewall-monitoring.md  # Phase 3: iptables Default-DROP firewall & Fail2ban
+│       └── 04-cloudflare-tls.md       # Phase 4: Cloudflare Proxy, Origin CA & Full (Strict) SSL
+└── docs/
+    └── runbooks/
+        └── 02-wireguard-s2c-vpn-setup.md # Operational runbook for WireGuard administration
+```
