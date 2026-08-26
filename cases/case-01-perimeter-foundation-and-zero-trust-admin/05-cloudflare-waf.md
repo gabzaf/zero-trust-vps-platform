@@ -5,7 +5,7 @@
 ---
 
 ### In this phase
-- [12. Cloudflare WAF & Edge Traffic Filtering](#12-cloudflare-waf--edge-traffic-filtering)
+- [12. Cloudflare WAF for Network Edge Blocking](#12-cloudflare-waf-for-network-edge-blocking)
   - [12.1. End-to-End Traffic Filtering Architecture](#121-end-to-end-traffic-filtering-architecture)
   - [12.2. WAF Core Concepts & Execution Precedence](#122-waf-core-concepts--execution-precedence)
     - [WAF Custom Rules](#waf-custom-rules)
