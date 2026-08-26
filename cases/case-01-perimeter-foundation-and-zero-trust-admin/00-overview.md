@@ -13,7 +13,7 @@
 ```mermaid
 flowchart LR
     S["<b>Situation</b><br/>- Fresh VPS reachable on public IPv4<br/>- Default administrative exposure risk<br/>- No private management plane yet"]
-    T["<b>Task</b><br/>- Bootstrap a secure Linux baseline<br/>- Replace root/password SSH with key-only admin access<br/>- Prepare DNS and move administration behind WireGuard"]
+    T["<b>Task</b><br/>- Bootstrap a hardened Linux baseline with key-only access<br/>- Isolate administrative plane inside a private WireGuard tunnel<br/>- Enforce Default-DROP perimeter firewall & active defense<br/>- Hide origin IP behind Cloudflare Edge with Strict SSL & WAF"]
     A["<b>Action</b><br/>- Generate Ed25519 SSH identity<br/>- Create admin user and base tooling<br/>- Delegate DNS to Cloudflare in DNS-only mode<br/>- Harden OpenSSH and restrict sudo<br/>- Deploy WireGuard S2C private admin tunnel<br/>- Configure Default-DROP firewall & Fail2ban<br/>- Cloudflare Proxy & Origin Full (Strict) SSL<br/>- Cloudflare Edge WAF & Rate Limiting"]
     R["<b>Result</b><br/>- Root/password SSH removed from normal access path<br/>- Admin privileges explicitly scoped<br/>- Server reachable for administration through 10.10.10.0/24<br/>- Host invisible to WAN scans; Origin protected behind Edge<br/>- Malicious L7 traffic dropped at the global edge"]
 
@@ -23,7 +23,7 @@ flowchart LR
 ---
 
 * **Situation**: I instantiated a fresh Linux VPS with a public IP. Out of the box, it's wide open, root login enabled, `password auth on`, no firewall, nothing hiding it from bots scanning the internet 24/7.
-* **Task**: Lock the server down before putting anything else on it. Get rid of root/password login, control exactly who can do what, hide the admin access behind a VPN and make sure the server is invisible to random internet traffic.
+* **Task**: Lock the server down before putting anything else on it: eliminate root/password remote access, isolate administration inside a private WireGuard tunnel, enforce a Default-DROP host firewall with automated intrusion defense and hide the origin IP behind Cloudflare with Full (Strict) SSL and Edge WAF filtering.
 * **What I did**:
   1. Generated an SSH key (`Ed25519`) and set up a non-root user to use instead of root.
   2. Updated the OS and installed the basic tools I'd need (`curl`, `jq`, `chrony for clock sync`, etc).
