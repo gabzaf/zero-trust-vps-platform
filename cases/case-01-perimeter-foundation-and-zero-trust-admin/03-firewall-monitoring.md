@@ -1,6 +1,6 @@
 # Phase 3: Firewall & Monitoring
 
-[← Phase 2: SSH & VPN Hardening](./02-ssh-vpn-hardening.md) · **Phase 3 of 4** · [Next: Cloudflare & TLS →](./04-cloudflare-tls.md)
+[← Phase 2: SSH & VPN Hardening](./02-ssh-vpn-hardening.md) · **Phase 3 of 5** · [Next: Cloudflare & TLS →](./04-cloudflare-tls.md)
 
 ---
 
@@ -357,4 +357,4 @@ Therefore, at this point:
 
 ---
 
-[← Phase 2: SSH & VPN Hardening](./02-ssh-vpn-hardening.md) · **Phase 3 of 4** · [Next: Phase 4 — Cloudflare Proxy & Full (Strict) SSL →](./04-cloudflare-tls.md)
+[← Phase 2: SSH & VPN Hardening](./02-ssh-vpn-hardening.md) · **Phase 3 of 5** · [Next: Phase 4 — Cloudflare Proxy & Full (Strict) SSL →](./04-cloudflare-tls.md)

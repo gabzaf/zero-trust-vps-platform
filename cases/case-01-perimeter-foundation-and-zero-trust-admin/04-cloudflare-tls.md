@@ -1,6 +1,6 @@
 # Phase 4: Cloudflare Proxy & Full (Strict) SSL
 
-[← Phase 3: Firewall & Monitoring](./03-firewall-monitoring.md) · **Phase 4 of 4** · [Back to Overview →](./00-overview.md)
+[← Phase 3: Firewall & Monitoring](./03-firewall-monitoring.md) · **Phase 4 of 5** · [Next: Cloudflare WAF →](./05-cloudflare-waf.md)
 
 ---
 
@@ -357,4 +357,4 @@ drwx------ 2 root root 4096 ... .
 
 ---
 
-[← Phase 3: Firewall & Monitoring](./03-firewall-monitoring.md) · **Phase 4 of 4** · [Back to Overview →](./00-overview.md)
+[← Phase 3: Firewall & Monitoring](./03-firewall-monitoring.md) · **Phase 4 of 5** · [Next: Phase 5 — Cloudflare WAF & Edge Security →](./05-cloudflare-waf.md)

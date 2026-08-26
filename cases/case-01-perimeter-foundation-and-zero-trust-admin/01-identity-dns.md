@@ -1,6 +1,6 @@
 # Phase 1: Identity & DNS
 
-[← Overview](./00-overview.md) · **Phase 1 of 4** · [Next: SSH & VPN Hardening →](./02-ssh-vpn-hardening.md)
+[← Overview](./00-overview.md) · **Phase 1 of 5** · [Next: SSH & VPN Hardening →](./02-ssh-vpn-hardening.md)
 
 ---
 
@@ -203,4 +203,4 @@ After adding the records, my DNS in Cloudflare will have:
 
 ---
 
-[← Overview](./00-overview.md) · **Phase 1 of 4** · [Next: Phase 2 — SSH & VPN Hardening →](./02-ssh-vpn-hardening.md)
+[← Overview](./00-overview.md) · **Phase 1 of 5** · [Next: Phase 2 — SSH & VPN Hardening →](./02-ssh-vpn-hardening.md)

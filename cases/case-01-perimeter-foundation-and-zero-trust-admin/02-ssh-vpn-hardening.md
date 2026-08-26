@@ -1,6 +1,6 @@
 # Phase 2: SSH & VPN Hardening
 
-[← Phase 1: Identity & DNS](./01-identity-dns.md) · **Phase 2 of 4** · [Next: Firewall & Monitoring →](./03-firewall-monitoring.md)
+[← Phase 1: Identity & DNS](./01-identity-dns.md) · **Phase 2 of 5** · [Next: Firewall & Monitoring →](./03-firewall-monitoring.md)
 
 ---
 
@@ -548,4 +548,4 @@ From now on, this will be my only way to manage the server from the next steps o
 
 ---
 
-[← Phase 1: Identity & DNS](./01-identity-dns.md) · **Phase 2 of 4** · [Next: Phase 3 — Firewall & Monitoring →](./03-firewall-monitoring.md)
+[← Phase 1: Identity & DNS](./01-identity-dns.md) · **Phase 2 of 5** · [Next: Phase 3 — Firewall & Monitoring →](./03-firewall-monitoring.md)
