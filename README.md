@@ -71,10 +71,6 @@ Each case documents engineering decisions and trade-offs behind this platform fo
 | Case | Focus Area | Key Technologies | Status |
 | :--- | :--- | :--- | :---: |
 | **[Case 01](./cases/case-01-perimeter-foundation-and-zero-trust-admin/00-overview.md)** | VPS Perimeter Foundation & Zero-Trust Administration | Cloudflare Proxy, WireGuard, iptables, Fail2ban, SSH Hardening | 🟢 Published |
-| **Case 02** | Edge Ingress, WAF Rules & Traefik v3 Reverse Proxy | Cloudflare WAF, Traefik v3, Origin CA, Strict TLS | 🟡 Planned |
-| **Case 03** | Container Platform Hardening & Network Isolation | Docker CE, Non-Root Containers, Isolated DB Bridge | 🟡 Planned |
-| **Case 04** | Centralized Observability & Telemetry Stack | Grafana, Loki, Promtail, Netdata, Cockpit | 🟡 Planned |
-| **Case 05** | Automated Encrypted Backups & Disaster Recovery | Restic, Systemd Timers, Remote Object Storage | 🟡 Planned |
 
 ---
 
