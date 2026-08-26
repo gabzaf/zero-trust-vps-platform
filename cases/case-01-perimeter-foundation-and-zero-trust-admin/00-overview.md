@@ -1,4 +1,4 @@
-# Case 01: VPS Perimeter Foundation & Zero-Trust Administration
+# Overview
 
 > **Domain**: Infrastructure Security, Linux Administration, Network Hardening
 >
