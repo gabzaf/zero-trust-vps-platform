@@ -1318,3 +1318,99 @@ curl http://10.10.10.1
 ```
 
 🟢 Expected result: Connection works if a server is set. Proves that the block is perimeter-based.
+
+---
+
+### 11. End-to-end Encryption with Full (Strict) SSL
+
+I will prepare the cryptographic foundation for secure traffic between Cloudflare and my VPS by installing the origin certificate that will be used by the reverse proxy I will install later.
+
+> [!IMPORTANT]
+> The HTTPS tunnel between Cloudflare and my VPS will only be complete after configuring Traefik. Now, I prepare the certificate.
+
+Now that administrative access, VPN and network perimeter are protected, it's time to prepare the infrastructure for end-to-end encrypted traffic.
+
+When a user accesses any URL on my server `https://mysite.com`, the traffic doesn't go directly to my VPS. It passes through Cloudflare first:
+
+```bash
+\o/ User ←──HTTPS──→ Cloudflare ←──HTTPS──→ VPS Server | - |
+ |         (Edge)                 (Origin)             | - |
+/ \                                                    | - |
+```
+
+These are two independent HTTPS connections, each with its own certificate.
+
+#### The two layers of encryption
+
+There are two distinct encryption layers when I use Cloudflare as a proxy:
+
+##### Edge Layer (User ↔ Cloudflare)
+
+This layer is already in place. As soon as I add a domain to Cloudflare, it automatically issues a universal SSL certificate that covers my domain and the www subdomain.
+
+When the browser accesses my website, it only communicates with Cloudflare and only sees Cloudflare's certificate. I don't install, configure or renew anything for this to work.
+
+##### Origin Layer (Cloudflare ↔ VPS Server)
+
+This layer is my responsibility. Cloudflare needs a valid certificate on my VPS to close the encrypted tunnel. Without it, traffic between Cloudflare and my server can be intercepted.
+
+##### Why does this matter?
+
+Cloudflare offers four encryption modes for connecting to my origin (Origin Layer):
+
+| Mode            | What Happens                                                                 | Verdict                          |
+|-----------------|------------------------------------------------------------------------------|----------------------------------|
+| Off             | No encryption at any point                                                   | ❌ Never use                     |
+| Flexible        | HTTPS only between user and Cloudflare. Traffic to my VPS is plaintext       | ❌ Avoid as much as possible     |
+| Full            | HTTPS on both ends, but accepts any certificate (even expired or invalid)    | ⚠️ Vulnerable to MITM attacks    |
+| Full (Strict)   | HTTPS on both ends with strict origin certificate validation                 | ✅ The only acceptable option    |
+
+The difference between Full and Full (Strict) is critical: in Full mode, an attacker can present any certificate and Cloudflare will accept it. In Full (Strict) mode, Cloudflare validates whether the certificate is legitimate before establishing the connection.
+
+There is **only one valid choice for production**: Full (Strict).
+
+#### The strategy adopted: Cloudflare Origin Certificate
+
+For the origin certificate, I have two viable options:
+
+- **Let's Encrypt** - Standard public certificate, accepted by any client. Requires renewal every 90 days and opening ports for validation. Useful if my VPS needs to respond directly without Cloudflare in front.
+
+- **Cloudflare Origin Certificate** - Certificate issued free of charge by the Cloudflare CA, valid for up to 15 years. Does not require frequent renewal or validation scripts. Ideal for servers that always operate behind Cloudflare.
+
+I will use the Cloudflare Origin Certificate. It exists for a single purpose: to allow Cloudflare to cryptographically validate my origin without depending on a public Certificate Authority (CA).
+
+Origin Certificate Features:
+- Only Cloudflare trusts it
+- Valid for up to 15 years
+- Zero renewal maintenance
+- Perfect for architectures with reverse proxy
+
+Generating this certificate now avoids hasty decisions later and allows for immediate Full (Strict) activation when the reverse proxy goes live.
+
+Here is the complete diagram of the adopted architecture:
+
+##### End-to-End Criptography Structure
+
+```bash
+
+   CLIENT  (Browser)          CLOUDFLARE (Proxy)            VPS (Origin)
+  +-----------------+        +------------------+        +------------------+
+  |                 |        |                  |        |                  |
+  |    O            |        |    Orange        |        |    Private       |
+  |   /|\  USER     |        |    Cloud         |        |    Vault         |
+  |   / \           |        |                  |        |                  |
+  +--------+--------+        +---------+--------+        +---------+--------+
+           |                           |                           |
+           |       EDGE TUNNEL         |       ORIGIN TUNNEL       |
+           |    (Public HTTPS)         |    (Private HTTPS)        |
+           +-------------------------->+-------------------------->+
+           |                           |                           |
+    CERTIFICATE:                CERTIFICATE:                CERTIFICATE:
+    Universal SSL               Cloudflare CA               Origin Cert
+    (Emitted by CF)           (Validated by CF)          (Instalde in /etc/ssl)
+           |                           |                           |
+           |                           |                           |
+    MODE: SSL FULL (STRICT) <--------------------------------------+
+```
+
+
