@@ -9,11 +9,16 @@
   - [sudo Restriction](#sudo-restriction)
 - [5. VPN Site-to-Client (S2C) and Private Administration](#5-vpn-site-to-client-s2c-and-private-administration)
   - [WireGuard Adopted Architecture](#wireguard-adopted-architecture)
-  - [1. Connect via SSH](#1-connect-via-ssh)
-  - [2. WireGuard Installation](#2-wireguard-installation)
-  - [3. Server Side](#3-server-side)
-  - [4. Client Side](#4-client-side)
-  - [5. Start the VPN](#5-start-the-vpn)
+  - [5.1. Connect via SSH](#51-connect-via-ssh)
+  - [5.2. WireGuard Installation](#52-wireguard-installation)
+  - [5.3. Server Side](#53-server-side)
+    - [5.3.1 Keys Generation](#531-keys-generation)
+    - [5.3.2 VPN Interface Configuration `wg0`](#532-vpn-interface-configuration-wg0)
+    - [5.3.3 Firewall Configuration (Server)](#533-firewall-configuration-server)
+  - [5.4. Client Side](#54-client-side)
+    - [5.4.1 Keys Generation](#541-keys-generation)
+    - [5.4.2 Client Registration on Server](#542-client-registration-on-server)
+  - [5.5. Start the VPN](#55-start-the-vpn)
 - [6. Admin Device Configuration (Client)](#6-admin-device-configuration-client)
   - [Tunnel Lifecycle (connect and disconnect)](#tunnel-lifecycle-connect-and-disconnect)
   - [Connectivity Validation and Diagnostics](#connectivity-validation-and-diagnostics)
@@ -388,8 +393,6 @@ AllowedIPs = 10.10.10.2/32
 ```
 Each customer receives a fixed IP and a `/32` block.
 </details>
-
----
 
 #### 5.5. Start the VPN
 <details>

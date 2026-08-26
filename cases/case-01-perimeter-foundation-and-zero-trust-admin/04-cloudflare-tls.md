@@ -6,18 +6,18 @@
 
 ### In this phase
 - [10. Cloudflare Proxy and Infrastructure Obfuscation](#10-cloudflare-proxy-and-infrastructure-obfuscation)
-  - [1. Cloudflare Proxy Activation](#1-cloudflare-proxy-activation)
-  - [2. Adjust Local Firewall to Cloudflare-Aware](#2-adjust-local-firewall-to-cloudflare-aware)
-  - [3. Final Cloudflare-aware Firewall Structure](#3-final-cloudflare-aware-firewall-structure)
-  - [4. Mandatory Tests](#4-mandatory-tests)
+  - [10.1. Cloudflare Proxy Activation](#101-cloudflare-proxy-activation)
+  - [10.2. Adjust Local Firewall to Cloudflare-Aware](#102-adjust-local-firewall-to-cloudflare-aware)
+  - [10.3. Final Cloudflare-aware Firewall Structure](#103-final-cloudflare-aware-firewall-structure)
+  - [10.4. Mandatory Tests](#104-mandatory-tests)
 - [11. End-to-end Encryption with Full (Strict) SSL](#11-end-to-end-encryption-with-full-strict-ssl)
-  - [The two layers of encryption](#the-two-layers-of-encryption)
-  - [The strategy adopted: Cloudflare Origin Certificate](#the-strategy-adopted-cloudflare-origin-certificate)
-  - [End-to-End Encryption Structure](#end-to-end-encryption-structure)
-  - [1. Generate the Cloudflare Origin Certificate](#1-generate-the-cloudflare-origin-certificate)
-  - [2. Installing the certificate on the origin (VPS)](#2-installing-the-certificate-on-the-origin-vps)
-  - [3. Enabling Full (Strict) in Cloudflare](#3-enabling-full-strict-in-cloudflare)
-  - [4. Verify files on the server](#4-verify-files-on-the-server)
+  - [11.1. The Two Layers of Encryption](#111-the-two-layers-of-encryption)
+  - [11.2. The Strategy Adopted: Cloudflare Origin Certificate](#112-the-strategy-adopted-cloudflare-origin-certificate)
+  - [11.3. End-to-End Encryption Structure](#113-end-to-end-encryption-structure)
+  - [11.4. Generate the Cloudflare Origin Certificate](#114-generate-the-cloudflare-origin-certificate)
+  - [11.5. Installing the Certificate on the Origin (VPS)](#115-installing-the-certificate-on-the-origin-vps)
+  - [11.6. Enabling Full (Strict) in Cloudflare](#116-enabling-full-strict-in-cloudflare)
+  - [11.7. Verify Files on the Server](#117-verify-files-on-the-server)
 
 ---
 
@@ -40,7 +40,7 @@ At the end:
 - Only Cloudflare IPs will be allowed on the local firewall;
 - Any attempt to directly access the real IP address will continue to be blocked.
 
-#### 1. Cloudflare Proxy Activation
+#### 10.1. Cloudflare Proxy Activation
 
 <details>
 <summary><b>▶ View steps — enabling proxy and configuring records</b></summary>
@@ -77,7 +77,7 @@ The `srv01` record should remain **DNS Only (grayed out)**. It is used for direc
 > Immediate result: From this point on, HTTP/HTTPS requests pass through Cloudflare's servers, and the VPS's real IP address no longer appears in any public response.
 </details>
 
-#### 2. Adjust Local Firewall to Cloudflare-Aware
+#### 10.2. Adjust Local Firewall to Cloudflare-Aware
 Do not open ports 80/443 to the world. I will only authorize official Cloudflare IPs and make the local firewall on my VPS server a Cloudflare-aware firewall.
 
 <details>
@@ -171,7 +171,7 @@ Add the line:
 `0 4 * * 0 /usr/local/bin/cloudflare-firewall.sh >> /var/log/cloudflare-firewall.log 2>&1`
 </details>
 
-#### 3. Final Cloudflare-aware Firewall Structure
+#### 10.3. Final Cloudflare-aware Firewall Structure
 ```text
 Chain INPUT (policy DROP)
 │
@@ -187,7 +187,7 @@ Chain INPUT (policy DROP)
 └─ DROP: all the rest (policy)
 ```
 
-#### 4. Mandatory Tests
+#### 10.4. Mandatory Tests
 <details>
 <summary><b>▶ View tests — validating origin invisibility</b></summary>
 
@@ -232,7 +232,7 @@ When a user accesses `https://mysite.com`, traffic doesn't go directly to my VPS
 / \                                                    | - |
 ```
 
-#### The two layers of encryption
+#### 11.1. The Two Layers of Encryption
 
 ##### Edge Layer (User ↔ Cloudflare)
 This layer is already in place. As soon as I add a domain to Cloudflare, it automatically issues a universal SSL certificate that covers my domain and the www subdomain.
@@ -250,11 +250,11 @@ This layer is my responsibility. Cloudflare needs a valid certificate on my VPS 
 
 There is **only one valid choice for production**: **Full (Strict)**.
 
-#### The strategy adopted: Cloudflare Origin Certificate
+#### 11.2. The Strategy Adopted: Cloudflare Origin Certificate
 - **Let's Encrypt** — Standard public certificate, accepted by any client. Requires renewal every 90 days.
 - **Cloudflare Origin Certificate** — Certificate issued free of charge by the Cloudflare CA, valid for up to 15 years. Zero renewal maintenance. Ideal for servers behind Cloudflare.
 
-#### End-to-End Encryption Structure
+#### 11.3. End-to-End Encryption Structure
 
 ```text
    CLIENT  (Browser)          CLOUDFLARE (Proxy)            VPS (Origin)
@@ -277,7 +277,7 @@ There is **only one valid choice for production**: **Full (Strict)**.
     MODE: SSL FULL (STRICT) <--------------------------------------+
 ```
 
-#### 1. Generate the Cloudflare Origin Certificate
+#### 11.4. Generate the Cloudflare Origin Certificate
 <details>
 <summary><b>▶ View steps — issuing the certificate in the dashboard</b></summary>
 
@@ -291,7 +291,7 @@ There is **only one valid choice for production**: **Full (Strict)**.
 > Cloudflare will display the **Origin Certificate** (CRT) and the **Private Key** (KEY) only once.
 </details>
 
-#### 2. Installing the certificate on the origin (VPS)
+#### 11.5. Installing the Certificate on the Origin (VPS)
 <details>
 <summary><b>▶ View commands — certificate installation and validation</b></summary>
 
@@ -332,7 +332,7 @@ sudo openssl rsa -noout -modulus -in /etc/ssl/cloudflare/origin.key | openssl md
 🟢 Expected result: The MD5 hashes should be identical.
 </details>
 
-#### 3. Enabling Full (Strict) in Cloudflare
+#### 11.6. Enabling Full (Strict) in Cloudflare
 <details>
 <summary><b>▶ View steps — enabling Full (Strict) and checking files</b></summary>
 
@@ -341,7 +341,7 @@ In the panel:
 - Select **Full (Strict)**
 </details>
 
-#### 4. Verify files on the server
+#### 11.7. Verify Files on the Server
 ```bash
 ls -la /etc/ssl/cloudflare/
 ```

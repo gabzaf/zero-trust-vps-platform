@@ -6,19 +6,20 @@
 
 ### In this phase
 - [8. Perimeter Firewall and Network Isolation](#8-perimeter-firewall-and-network-isolation)
-  - [Why a Firewall?](#why-a-firewall)
-  - [Architectural Principle](#architectural-principle)
-  - [Chosen Tool (iptables)](#chosen-tool)
-  - [Secure Firewall Configuration](#secure-firewall-configuration-whitelist-before-drop)
-  - [Persistence of Firewall Rules](#persistence-of-firewall-rules)
-  - [Checking the iptables Rules](#checking-the-iptables-rules)
-  - [Mandatory Tests](#mandatory-tests)
+  - [8.1. Why a Firewall?](#81-why-a-firewall)
+  - [8.2. Architectural Principle](#82-architectural-principle)
+  - [8.3. Chosen Tool (iptables)](#83-chosen-tool-iptables)
+  - [8.4. Secure Firewall Configuration (whitelist before drop)](#84-secure-firewall-configuration-whitelist-before-drop)
+  - [8.5. Persistence of Firewall Rules](#85-persistence-of-firewall-rules)
+  - [8.6. Mandatory Tests](#86-mandatory-tests)
+  - [8.7. Expected End State](#87-expected-end-state)
 - [9. Active Monitoring and Incident Response](#9-active-monitoring-and-incident-response)
-  - [Defense Architecture](#defense-architecture)
-  - [1. Telemetry Preparation and Verification](#1-telemetry-preparation-and-verification)
-  - [2. Configure Intrusion Detection](#2-configure-intrusion-detection)
-  - [3. Automatic Response Validation](#3-automatic-response-validation)
-  - [4. Controlled Tests (Mandatory)](#4-controlled-tests-mandatory)
+  - [9.1. Defense Architecture](#91-defense-architecture)
+  - [9.2. Telemetry Preparation and Verification](#92-telemetry-preparation-and-verification)
+  - [9.3. Configure Intrusion Detection (Fail2ban)](#93-configure-intrusion-detection-fail2ban)
+  - [9.4. Automatic Response Validation](#94-automatic-response-validation)
+  - [9.5. Controlled Tests (Mandatory)](#95-controlled-tests-mandatory)
+  - [9.6. Expected Final State](#96-expected-final-state)
 
 ---
 
@@ -38,7 +39,7 @@ At this point, no public services should exist. Here:
 - I do not integrate Cloudflare as a proxy.
 - I protect raw network traffic, before any upper layer.
 
-#### Why a Firewall?
+#### 8.1. Why a Firewall?
 Without a firewall:
 - A VPN becomes just "another access point"
 - Future services may leak
@@ -46,7 +47,7 @@ Without a firewall:
 
 I implement a total isolation firewall whose objective is to make the server disappear from the public internet.
 
-#### Architectural Principle
+#### 8.2. Architectural Principle
 Blacklist is a reaction. Here, everything coming from the public internet will be blocked by default so that nothing is exposed. As of this moment:
 - Cloudflare is DNS Only
 - No HTTP/HTTPS services are published
@@ -65,7 +66,7 @@ Maintaining only the bare minimum:
 
 Ports will not be opened "for later use". Open them when necessary!
 
-#### Chosen Tool
+#### 8.3. Chosen Tool (iptables)
 I will use `iptables` for 3 reasons:
 - **Predictability**: I see exactly the rule that the Kernel executes.
 - **Performance**: Packet processing without the overhead of Python/Ruby services.
@@ -73,6 +74,7 @@ I will use `iptables` for 3 reasons:
 
 Therefore, I avoid abstraction layers. No UFW, firewalld or magic panels here.
 
+#### 8.4. Secure Firewall Configuration (whitelist before drop)
 <details>
 <summary><b>▶ View commands — iptables rules (whitelist before drop)</b></summary>
 
@@ -118,8 +120,7 @@ sudo iptables -P OUTPUT ACCEPT
 - `OUTPUT ACCEPT`: The server can access the internet normally (updates, DNS, APIs).
 </details>
 
-#### Persistence of Firewall Rules
-
+#### 8.5. Persistence of Firewall Rules
 <details>
 <summary><b>▶ View commands — persisting rules across reboot</b></summary>
 
@@ -138,31 +139,30 @@ sudo iptables -L
 ```
 </details>
 
-#### Mandatory Tests
-
+#### 8.6. Mandatory Tests
 <details>
 <summary><b>▶ View tests — perimeter validation</b></summary>
 
-**5.1. Test via VPN** (expected success)
+**8.6.1. Test via VPN** (expected success)
 ```bash
 ssh -i ~/.ssh/my_key <username>@10.10.10.1
 ```
 🟢 Must log in instantly.
 
-**5.2. Test via Public IP** (Expected Blocking):
+**8.6.2. Test via Public IP** (Expected Blocking):
 ```bash
 sudo wg-quick down vps-admin
 ssh -i ~/.ssh/my_key <username>@srv01.mysite.com
 ```
 🔴 It should remain "hanging" until it times out.
 
-**5.3 Scan test via public access outside the VPN** (invisibility):
+**8.6.3. Scan test via public access outside the VPN** (invisibility):
 ```bash
 curl http://srv01.mysite.com
 ```
 </details>
 
-#### Expected End State
+#### 8.7. Expected End State
 This is the correct baseline state before operating services:
 - The server is an invisible target on the public network.
 - The only port that responds externally is `51820/UDP` (WireGuard).
@@ -182,7 +182,7 @@ I will create telemetry + reaction, ensuring that:
 - Processing power is not wasted on hostile connections;
 - My logs remain clean, containing only relevant data.
 
-#### Defense Architecture
+#### 9.1. Defense Architecture
 The strategy is simple and verifiable layers:
 1. Reliable logs (`systemd` + `sshd`)
 2. Pattern detector (Fail2ban)
@@ -191,7 +191,7 @@ The strategy is simple and verifiable layers:
 
 No heavy SIEM, no external SaaS at this stage.
 
-#### 1. Telemetry Preparation and Verification
+#### 9.2. Telemetry Preparation and Verification
 <details>
 <summary><b>▶ View commands — checking sshd LogLevel</b></summary>
 
@@ -209,7 +209,7 @@ sudo systemctl reload sshd
 ```
 </details>
 
-#### 2. Configure Intrusion Detection
+#### 9.3. Configure Intrusion Detection (Fail2ban)
 Fail2ban is a tool that reads system logs and upon detecting an attack pattern, executes a blocking command in `iptables`.
 
 <details>
@@ -279,7 +279,7 @@ sudo systemctl restart fail2ban
 ```
 </details>
 
-#### 3. Automatic Response Validation
+#### 9.4. Automatic Response Validation
 <details>
 <summary><b>▶ View commands — general status and SSH jail</b></summary>
 
@@ -300,7 +300,7 @@ sudo fail2ban-client status sshd
 I should see banned IPs (if any) and active counters.
 </details>
 
-#### 4. Controlled Tests (Mandatory)
+#### 9.5. Controlled Tests (Mandatory)
 <details>
 <summary><b>▶ View tests — simulating an attack and validating the ban</b></summary>
 
@@ -346,7 +346,7 @@ ssh -i ~/.ssh/my_key ops@10.10.10.1
 🟢 Expected result: normal access; no impact on VPN.
 </details>
 
-#### Expected final state
+#### 9.6. Expected Final State
 In the current configuration, Fail2ban will serve as a "second line of defense" if I need to open any public ports in the future or to protect the WireGuard port itself (`UDP 51820`) against packet flooding.
 
 Therefore, at this point:
