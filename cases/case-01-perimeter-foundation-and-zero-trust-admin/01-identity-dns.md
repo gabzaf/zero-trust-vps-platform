@@ -21,8 +21,6 @@
 ### 1. Generate SSH Key Pair
 To generate a modern, secure SSH key compatible with virtually any VPS provider, the recommended standard is **Ed25519**.
 
----
-
 <details>
 <summary><b>▶ View commands — SSH key generation</b></summary>
 
@@ -35,8 +33,8 @@ ssh-keygen -t ed25519 -C "email@example.com" -f ~/.ssh/my_key
 - `-f`: Defines a specific name and path for the key.
 
 The terminal will ask two questions:
-1. **Enter passphrase**: (Recommended) Enter a password to protect the private key file. Or press Enter twice to leave it without a password (passphrase empty).
-2. **Enter same passphrase again**: Repeat the password.
+1.1. **Enter passphrase**: (Recommended) Enter a password to protect the private key file. Or press Enter twice to leave it without a password (passphrase empty).
+1.2. **Enter same passphrase again**: Repeat the password.
 
 The command will create two files in the `~/.ssh` folder:
 - `my_key`: My Private Key. Never share this file.
@@ -86,8 +84,6 @@ passwd root
 This password will be used whenever I need to log in as `root`.
 </details>
 
----
-
 #### a. Create a user with sudo
 The first step is to create a security layer by creating a regular user with administrative permissions.
 
@@ -118,8 +114,6 @@ usermod -aG wheel <username>
 > Never log out of the root terminal without first testing the new user.
 </details>
 
----
-
 #### b. Copy SSH key to the new user
 From now on, I will use the `<username>` user for everything!
 
@@ -127,8 +121,6 @@ Therefore, I have to ensure I can access my server without root using an SSH pub
 
 > [!IMPORTANT]
 > **Note on key reuse**: Using the same SSH key for `root` and the administrative user works, but reduces the security isolation between the two accounts, because if the key is leaked, both accesses are compromised together. To ensure complete security, consider generating a dedicated key per user.
-
----
 
 <details>
 <summary><b>▶ View commands — copying and testing the key</b></summary>
@@ -186,8 +178,6 @@ After accessing Cloudflare dashboard, follow the steps below:
    - Replace the existing values with the two provided by Cloudflare.
 6. With the nameservers changed at the registrar, return to Cloudflare and click **Done, check nameservers** to start the verification.
 </details>
-
----
 
 #### DNS Propagation Time
 After changing the nameservers at my registrar, I need to wait for DNS propagation:

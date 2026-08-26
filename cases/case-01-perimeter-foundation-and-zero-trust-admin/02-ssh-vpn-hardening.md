@@ -260,9 +260,9 @@ flowchart LR
 I use the WireGuard protocol for Site-to-Client (S2C) VPN implementation. It is minimalist in code, meaning less surface area for vulnerabilities. It comes with modern encryption via **Curve25519** and has **UDP stealth** behavior that does not respond to port scans. To an external scanner, port 51820/UDP is indistinguishable from a blocked port.
 
 The new access flow after completing this module:
-1. Activate the VPN tunnel on my computer.
-2. Access the server via private IP or internal hostname.
-3. The firewall will block any access attempts that do not originate from the tunnel.
+5.1. Activate the VPN tunnel on my computer.
+5.2. Access the server via private IP or internal hostname.
+5.3. The firewall will block any access attempts that do not originate from the tunnel.
 
 #### 1. Connect via SSH
 
@@ -388,6 +388,8 @@ AllowedIPs = 10.10.10.2/32
 ```
 Each customer receives a fixed IP and a `/32` block.
 </details>
+
+---
 
 #### 5. Start the VPN
 <details>
