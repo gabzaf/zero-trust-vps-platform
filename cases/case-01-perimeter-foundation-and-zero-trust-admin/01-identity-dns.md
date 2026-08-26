@@ -90,7 +90,7 @@ The first step is to create a security layer by creating a regular user with adm
 
 Create a dedicated user (e.g., ops, admin, or any other name) and grant superuser privileges.
 
-> [!TIP]
+> [!NOTE]
 > The commands below are executed as root.
 
 Create `<username>` user:
