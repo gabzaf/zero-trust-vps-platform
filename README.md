@@ -52,6 +52,23 @@ graph TD
 
 ---
 
+## Controls mapping
+
+This host is built as **defense in depth** with **Zero Trust administration**: the admin path is identity plus VPN, not a public SSH port.
+
+| Implemented | CIS Controls v8 | NIST CSF |
+| --- | --- | --- |
+| Ed25519 SSH, no root, no password auth, scoped sudo | CSC 5–6 Account & Access Control | Protect |
+| WireGuard S2C; SSH only on `10.10.10.0/24` | CSC 12 Network Infrastructure | Protect |
+| iptables Default-DROP; 80/443 only from Cloudflare IPs | CSC 12–13 Network Monitoring and Defense | Protect / Detect |
+| Fail2ban | CSC 8 Audit Log Management, CSC 13 | Detect |
+| Cloudflare Full (Strict) TLS + Origin CA | CSC 3 Data Protection | Protect |
+| Cloudflare WAF, managed rules, rate limiting | CSC 9, CSC 13 | Protect / Detect |
+
+Governance and NIS2/RJC study notes live in [cybersecurity-officer](https://github.com/gabzaf/cybersecurity-officer), not in this repo.
+
+---
+
 ## Engineering Case Studies (S.T.A.R. Format)
 
 Each case documents engineering decisions and trade-offs behind this platform following the **Situation, Task, Action, Result** methodology.
