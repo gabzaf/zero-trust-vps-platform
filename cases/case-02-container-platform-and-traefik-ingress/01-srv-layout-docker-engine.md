@@ -39,7 +39,7 @@ ssh -i ~/.ssh/my_key <username>@srv01.mysite.com
 
 ---
 
-### 1. Production Directory Structure (/srv)
+### 1. Production Directory Structure (`/srv`)
 Before launching any container, I decide where things will live. That decision affects everything that comes after: backups, permissions, migrations and troubleshooting.
 
 #### 1.1. Why Decide This First?
