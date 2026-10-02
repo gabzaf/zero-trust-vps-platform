@@ -16,6 +16,7 @@ This document maps every control on the platform to **CIS Critical Security Cont
   - [3.4. Case 04: Backups and Recovery (Planned)](#34-case-04-backups-and-recovery-planned)
 - [4. Known Gaps](#4-known-gaps)
 - [5. Outside This Repository](#5-outside-this-repository)
+- [6. References](#6-references)
 
 ---
 
@@ -25,10 +26,13 @@ This document maps every control on the platform to **CIS Critical Security Cont
 
 | Framework | What it answers | How it's cited here |
 | :--- | :--- | :--- |
-| **CIS Controls v8** | *What should be done?* 18 controls broken into concrete, testable **safeguards**, prioritized in Implementation Groups (IG1 is the baseline every organization should meet) | By safeguard: `4.4` = Control 4, Safeguard 4 |
-| **NIST CSF 2.0** | *What outcome is achieved?* Six functions (Govern, Identify, Protect, Detect, Respond, Recover) broken into categories and subcategories | By subcategory: `PR.IR-01` = Protect → Technology Infrastructure Resilience, outcome 01 |
+| **[CIS Controls v8](https://www.cisecurity.org/controls/v8)** | *What should be done?* 18 controls broken into concrete, testable **safeguards**, prioritized in Implementation Groups (IG1 is the baseline every organization should meet) | By safeguard: `4.4` = Control 4, Safeguard 4 |
+| **[NIST CSF 2.0](https://www.nist.gov/cyberframework)** | *What outcome is achieved?* Six functions (Govern, Identify, Protect, Detect, Respond, Recover) broken into categories and subcategories | By subcategory: `PR.IR-01` = Protect → Technology Infrastructure Resilience, outcome 01 |
 
-CIS says what to build; NIST says what that building achieves. Citing both lets a reviewer check the work against either one.
+CIS says what to build; NIST says what that building achieves. Citing both lets a reviewer check the work against either one. CIS publishes its own [mapping of CIS Controls v8 to NIST CSF 2.0](https://www.cisecurity.org/insights/white-papers/cis-controls-v8-mapping-to-nist-csf-2-0), which is the crosswalk this document follows.
+
+> [!NOTE]
+> **Versions.** Safeguard numbers here are from CIS Controls v8. [CIS Controls v8.1](https://www.cisecurity.org/controls/v8-1) (2024) revised Safeguard descriptions and asset classes and added the *Govern* function to align with NIST CSF 2.0. Check its change log before citing a Safeguard by its v8.1 wording. Every official source is listed in [section 6](#6-references).
 
 **Each row links two things.** *Implemented in* points to the case section where the control is built. *Verified by* points to the test that proves it works. A control without a test is a claim, not a control.
 
@@ -156,6 +160,33 @@ A mapping that only lists what's covered is marketing. These are the safeguards 
 ### 5. Outside This Repository
 - **NIST CSF 2.0 *Govern*** (policy, risk strategy, roles, supply chain) is an organizational function, not a property of one server. The governance side of my work, including NIS2 and the Portuguese RJC/QNRCS, is in [cybersecurity-officer](https://github.com/gabzaf/cybersecurity-officer).
 - **CIS safeguards for organizations** (enterprise asset inventories, awareness training, service-provider management, penetration testing programs) don't apply to a single-administrator platform and aren't mapped.
+
+---
+
+### 6. References
+Official sources only. Every safeguard ID and subcategory in this document was checked against them.
+
+**CIS Critical Security Controls** (Center for Internet Security)
+
+| Resource | What it is | Access |
+| :--- | :--- | :--- |
+| [CIS Critical Security Controls](https://www.cisecurity.org/controls) | Overview of the 18 Controls and the Implementation Groups | Free |
+| [CIS Controls v8](https://www.cisecurity.org/controls/v8) | The version mapped in this document | Free |
+| [CIS Controls v8.1](https://www.cisecurity.org/controls/v8-1) | The 2024 update: revised descriptions and asset classes, adds *Govern* | Free |
+| [CIS Controls download (PDF, spreadsheet, change log)](https://learn.cisecurity.org/cis-controls-download) | The full documents: every Control and Safeguard | Free, registration form required |
+| [CIS Controls Assessment Specification v8](https://cas8.docs.cisecurity.org/en/latest/) | How each Safeguard is measured | Free |
+| [CIS Controls v8 mapping to NIST CSF 2.0](https://www.cisecurity.org/insights/white-papers/cis-controls-v8-mapping-to-nist-csf-2-0) | CIS's official crosswalk between the two frameworks | Free, registration form may be required |
+| [CIS Controls Navigator (v8)](https://www.cisecurity.org/controls/cis-controls-navigator/v8) | Interactive view of every Safeguard and its mappings to other frameworks | Free |
+
+**NIST Cybersecurity Framework** (National Institute of Standards and Technology)
+
+| Resource | What it is | Access |
+| :--- | :--- | :--- |
+| [NIST Cybersecurity Framework](https://www.nist.gov/cyberframework) | Framework homepage | Free |
+| [The NIST Cybersecurity Framework (CSF) 2.0, NIST CSWP 29 (PDF)](https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.29.pdf) | The framework itself, published 26 February 2024 ([DOI 10.6028/NIST.CSWP.29](https://doi.org/10.6028/NIST.CSWP.29)) | Free |
+| [CSF 2.0 Reference Tool](https://csrc.nist.gov/Projects/cybersecurity-framework/Filters#/csf/filters) | Searchable list of every function, category and subcategory | Free |
+| [CSF 2.0 Quick-Start Guides](https://www.nist.gov/cyberframework/quick-start-guides) | Short guides for applying the framework | Free |
+| [CSF Informative References](https://www.nist.gov/cyberframework/informative-references) | NIST's index of mappings between CSF and other standards | Free |
 
 ---
 
