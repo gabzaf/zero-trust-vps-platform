@@ -27,7 +27,7 @@
 ## Configuration Artifacts & Reference Code
 
 ### Before Starting
-Everything in this case is done through the private administration plane built in Case 01: the WireGuard tunnel and the `srv01` split-horizon name.
+Everything in this case is done through the private admin tunnel built in Case 01: the WireGuard tunnel and the `srv01` split-horizon name.
 
 ```bash
 sudo wg-quick up vps-admin
