@@ -1,5 +1,5 @@
 # zero-trust-vps-platform
-### *Cloudflare Edge, Zero-Trust Perimeter, WireGuard S2C, Host Firewall, Segmented Container Platform, Traefik Ingress & VPN-only Observability*
+### *Cloudflare Edge, Zero-Trust Perimeter, WireGuard S2C, Host Firewall, Segmented Container Platform, Traefik Ingress, VPN-only Observability & Tested Recovery*
 
 [![Linux](https://img.shields.io/badge/Linux-%20AlmaLinux-E95420?logo=linux&logoColor=white)](#)
 [![Security](https://img.shields.io/badge/Security-Zero--Trust%20Perimeter-success?logo=shield&logoColor=white)](#)
@@ -8,6 +8,7 @@
 [![Docker](https://img.shields.io/badge/Containers-Docker%20Engine-2496ED?logo=docker&logoColor=white)](#)
 [![Traefik](https://img.shields.io/badge/Ingress-Traefik%20v3-24A1C1?logo=traefikproxy&logoColor=white)](#)
 [![Observability](https://img.shields.io/badge/Observability-Loki%20%2B%20Grafana%20%2B%20Netdata-F46800?logo=grafana&logoColor=white)](#)
+[![Backup](https://img.shields.io/badge/Backup-Restic%20%E2%86%92%20B2%20Object%20Lock-E21E29?logo=backblaze&logoColor=white)](#)
 
 ---
 
@@ -53,6 +54,10 @@ graph TD
         UIS -->|LogQL| LOKI
     end
 
+    subgraph Offsite["Offsite Backup - Backblaze B2 (Case 04)"]
+        B2["Restic repository<br/>encrypted client-side, Object Lock 30 days"]
+    end
+
     User -->|HTTPS 443| CF_WAF
     CF_PROXY -->|Strict TLS Proxy| FW_CF
     FW_CF --> TRAEFIK
@@ -65,13 +70,14 @@ graph TD
     FW_WG --> WG_IF
     WG_IF -->|VPN allow-list: Traefik dashboard| TRAEFIK
     TRAEFIK -->|vpn-allowlist| UIS
+    Origin_Layer -.->|nightly encrypted backup| B2
 ```
 
 ---
 
 ## Controls mapping
 
-This host is built as **defense in depth** with **Zero Trust administration**: the admin path is identity plus VPN, not a public SSH port. Case 02 carries the same model into the container platform: nothing is exposed unless it's explicitly declared. Case 03 applies it to the tools that watch the platform: every dashboard is part of the admin plane.
+This host is built as **defense in depth** with **Zero Trust administration**: the admin path is identity plus VPN, not a public SSH port. Case 02 carries the same model into the container platform: nothing is exposed unless it's explicitly declared. Case 03 applies it to the tools that watch the platform: every dashboard is part of the admin plane. Case 04 applies it to the backups: encrypted before they leave, stored with another provider and immutable for 30 days.
 
 | Implemented | CIS Controls v8 | NIST CSF | Case |
 | --- | --- | --- | :---: |
@@ -98,6 +104,12 @@ This host is built as **defense in depth** with **Zero Trust administration**: t
 | Per-second host and container metrics (Netdata) | — (operational monitoring) | Detect | 03 |
 | End-to-end availability through Cloudflare; container health via the Docker API | — (operational monitoring) | Detect | 03 |
 | Inventory of every Docker-socket consumer, with justification | CSC 2 Software Inventory, CSC 4 Secure Configuration | Identify | 03 |
+| Nightly Restic backups, encrypted client-side, to another provider (B2); consistent copies of live databases | CSC 11 Data Recovery | Recover | 04 |
+| B2 Object Lock (governance, 30 days); bucket-scoped key without `bypassGovernance` | CSC 11 Data Recovery, CSC 3 Data Protection | Protect / Recover | 04 |
+| Repository password and key held off-server | CSC 11 Data Recovery | Recover | 04 |
+| Retention policy and weekly integrity check (`restic check`) | CSC 11 Data Recovery | Recover | 04 |
+| Backup heartbeat (Uptime Kuma push) and failure queries in Loki | CSC 8 Audit Log Management | Detect | 04 |
+| Written restore runbooks and timed drills (rollback, app restore, full rebuild) | CSC 11 Data Recovery (11.5 Test Data Recovery) | Recover | 04 |
 
 Governance and NIS2/RJC study notes live in [cybersecurity-officer](https://github.com/gabzaf/cybersecurity-officer), not in this repo.
 
@@ -112,6 +124,7 @@ Each case documents engineering decisions and trade-offs behind this platform fo
 | **[Case 01](./cases/case-01-perimeter-foundation-and-zero-trust-admin/00-overview.md)** | VPS Perimeter Foundation & Zero-Trust Administration | Cloudflare Proxy & WAF, WireGuard, iptables, Fail2ban, SSH Hardening | 🟢 Published |
 | **[Case 02](./cases/case-02-container-platform-and-traefik-ingress/00-overview.md)** | Segmented Container Platform & Traefik Ingress | Docker Engine, `DOCKER-USER` filtering, network segmentation, Traefik v3, Origin TLS | 🟢 Published |
 | **[Case 03](./cases/case-03-observability-metrics-logs-availability/00-overview.md)** | VPN-only Observability: Metrics, Logs & Availability | Cockpit, Portainer, Netdata, Loki + Promtail + Grafana, Uptime Kuma | 🟡 In review |
+| **[Case 04](./cases/case-04-backup-recovery-drills/00-overview.md)** | Immutable Backups & Timed Recovery Drills | Restic, Backblaze B2 Object Lock, systemd timers, restore runbooks, drills D1–D3 | 🟡 Drills pending |
 
 ---
 
@@ -135,12 +148,18 @@ Each case documents engineering decisions and trade-offs behind this platform fo
     │   ├── 03-networks-state.md            # Phase 3: Network segmentation & bind-mounted persistent state
     │   ├── 04-health-change-cycle.md       # Phase 4: Healthchecks, restart policies & update/rollback cycle
     │   └── 05-traefik-ingress.md           # Phase 5: Traefik v3, Origin TLS, middlewares & VPN-only dashboard
-    └── case-03-observability-metrics-logs-availability/
-        ├── 00-overview.md                     # S.T.A.R. breakdown, guiding principle & phase index
-        ├── 01-observability-model-access.md   # Phase 1: Signals to watch & the VPN-only access pattern
-        ├── 02-host-and-container-views.md     # Phase 2: Cockpit bound to wg0 & Portainer
-        ├── 03-metrics-netdata.md              # Phase 3: Netdata host & container metrics
-        ├── 04-centralized-logs.md             # Phase 4: Loki, Promtail & Grafana, retention & security queries
-        ├── 05-availability-socket-review.md   # Phase 5: Uptime Kuma & Docker-socket review
-        └── images/                            # Screenshots (sensitive data blurred)
+    ├── case-03-observability-metrics-logs-availability/
+    │   ├── 00-overview.md                     # S.T.A.R. breakdown, guiding principle & phase index
+    │   ├── 01-observability-model-access.md   # Phase 1: Signals to watch & the VPN-only access pattern
+    │   ├── 02-host-and-container-views.md     # Phase 2: Cockpit bound to wg0 & Portainer
+    │   ├── 03-metrics-netdata.md              # Phase 3: Netdata host & container metrics
+    │   ├── 04-centralized-logs.md             # Phase 4: Loki, Promtail & Grafana, retention & security queries
+    │   ├── 05-availability-socket-review.md   # Phase 5: Uptime Kuma & Docker-socket review
+    │   └── images/                            # Screenshots (sensitive data blurred)
+    └── case-04-backup-recovery-drills/
+        ├── 00-overview.md                  # S.T.A.R. breakdown, drill results & phase index
+        ├── 01-recovery-model.md            # Phase 1: Failure modes, state inventory, RTO/RPO, snapshots vs backups
+        ├── 02-restic-b2-backups.md         # Phase 2: B2 Object Lock, Restic, nightly job, retention & monitoring
+        ├── 03-restore-runbooks.md          # Phase 3: Restoring a file, an app's data and a whole host
+        └── 04-recovery-drills.md           # Phase 4: Timed drills D1-D3, results & open items
 ```
