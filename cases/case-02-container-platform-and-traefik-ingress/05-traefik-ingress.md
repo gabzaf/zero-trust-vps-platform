@@ -601,7 +601,7 @@ docker compose restart traefik
 
 ---
 
-> This closes the platform layer. The perimeter from Case 01 now has a single, filtered entry point. Behind it, services are segmented, their state is persistent, their health is measured and their updates are reversible. The next step is observability: making this platform's behavior visible in real time.
+> This closes the platform layer. The perimeter from Case 01 now has a single, filtered entry point. Behind it, services are segmented, their state is persistent, their health is measured and their updates are reversible. The next step is observability: making this platform's behavior visible in real time, in [Case 03](../case-03-observability-metrics-logs-availability/00-overview.md).
 
 ---
 
