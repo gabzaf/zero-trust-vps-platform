@@ -28,46 +28,6 @@ Each component is tagged with the case that built it. The diagram is generated f
 
 ---
 
-## Controls mapping
-
-This host is built as **defense in depth** with **Zero Trust administration**: the admin path is identity plus VPN, not a public SSH port. Case 02 carries the same model into the container platform: nothing is exposed unless it's explicitly declared. Case 03 applies it to the tools that watch the platform: every dashboard is part of the admin plane. Case 04 applies it to the backups: encrypted before they leave, stored with another provider and immutable for 30 days.
-
-| Implemented | CIS Controls v8 | NIST CSF | Case |
-| --- | --- | --- | :---: |
-| Ed25519 SSH, no root, no password auth, scoped sudo | CSC 5–6 Account & Access Control | Protect | 01 |
-| WireGuard S2C; SSH reachable only via `wg0` | CSC 12 Network Infrastructure | Protect | 01 |
-| iptables Default-DROP; 80/443 only from Cloudflare IPs | CSC 12–13 Network Monitoring and Defense | Protect / Detect | 01 |
-| Fail2ban | CSC 8 Audit Log Management, CSC 13 | Detect | 01 |
-| Cloudflare Full (Strict) TLS + Origin CA | CSC 3 Data Protection | Protect | 01 |
-| Cloudflare WAF, managed rules, rate limiting | CSC 9, CSC 13 | Protect / Detect | 01 |
-| Hardened Docker daemon (`icc` off, `no-new-privileges`, log rotation, ulimits) | CSC 4 Secure Configuration | Protect | 02 |
-| `DOCKER-USER` filter: published ports accept only Cloudflare on 80/443, fails closed | CSC 12–13 Network Infrastructure, Monitoring and Defense | Protect | 02 |
-| Segmented Docker networks; internal networks without egress; no published DB ports | CSC 12 Network Infrastructure | Protect | 02 |
-| Pinned images from official sources; changelog-gated change cycle with rollback | CSC 2 Software Inventory, CSC 7 Vulnerability Management | Identify / Protect | 02 |
-| Traefik: Origin CA TLS 1.2+, HSTS and security headers, per-client rate limiting | CSC 3 Data Protection, CSC 16 Application Software Security | Protect | 02 |
-| VPN-only admin routers (`ipAllowList`) and split-horizon dashboard | CSC 6 Access Control Management | Protect | 02 |
-| JSON access logs with the real client IP | CSC 8 Audit Log Management | Detect | 02 |
-| Bind-mounted state under `/srv/data`; snapshots before changes | CSC 11 Data Recovery | Recover | 02 |
-| Every admin UI VPN-only: split-horizon DNS, `vpn-allowlist`, no published ports | CSC 6 Access Control Management, CSC 12 Network Infrastructure | Protect | 03 |
-| Cockpit bound to the WireGuard address only (no public or IPv6 listener) | CSC 4 Secure Configuration, CSC 12 | Protect | 03 |
-| Centralized logs: containers, journal (`sshd`, `sudo`, Fail2ban, kernel), Traefik access log | CSC 8 Audit Log Management | Detect | 03 |
-| 7-day log retention with automatic deletion; Traefik log rotation | CSC 8 Audit Log Management | Detect | 03 |
-| Log store isolated (internal network, no egress); non-root Loki and Grafana; file-based admin secret | CSC 4 Secure Configuration, CSC 12 | Protect | 03 |
-| Security queries: admin logins, `sudo`, bans, VPN-allow-list `403`s, 5xx, 4xx sources | CSC 8, CSC 13 Network Monitoring and Defense | Detect | 03 |
-| Per-second host and container metrics (Netdata) | — (operational monitoring) | Detect | 03 |
-| End-to-end availability through Cloudflare; container health via the Docker API | — (operational monitoring) | Detect | 03 |
-| Inventory of every Docker-socket consumer, with justification | CSC 2 Software Inventory, CSC 4 Secure Configuration | Identify | 03 |
-| Nightly Restic backups, encrypted client-side, to another provider (B2); consistent copies of live databases | CSC 11 Data Recovery | Recover | 04 |
-| B2 Object Lock (governance, 30 days); bucket-scoped key without `bypassGovernance` | CSC 11 Data Recovery, CSC 3 Data Protection | Protect / Recover | 04 |
-| Repository password and key held off-server | CSC 11 Data Recovery | Recover | 04 |
-| Retention policy and weekly integrity check (`restic check`) | CSC 11 Data Recovery | Recover | 04 |
-| Backup heartbeat (Uptime Kuma push) and failure queries in Loki | CSC 8 Audit Log Management | Detect | 04 |
-| Written restore runbooks and timed drills (rollback, app restore, full rebuild) | CSC 11 Data Recovery (11.5 Test Data Recovery) | Recover | 04 |
-
-Governance and NIS2/RJC study notes live in [cybersecurity-officer](https://github.com/gabzaf/cybersecurity-officer), not in this repo.
-
----
-
 ## Engineering Case Studies (S.T.A.R. Format)
 
 Each case documents engineering decisions and trade-offs behind this platform following the **Situation, Task, Action, Result** methodology.
@@ -81,12 +41,30 @@ Each case documents engineering decisions and trade-offs behind this platform fo
 
 ---
 
+## Security Controls
+
+The platform is built as **defense in depth** with **Zero Trust administration**: the admin path is identity plus VPN, never a public port. Case 02 carries that into the container platform (nothing is exposed unless it's declared), Case 03 into the tools that watch it (every dashboard is part of the admin plane), and Case 04 into the backups (encrypted before they leave, immutable for 30 days).
+
+| Case | Main CIS Controls v8 safeguards | NIST CSF 2.0 |
+| :--- | :--- | :--- |
+| **01** Perimeter & admin access | 4.4 firewall on servers · 4.7 default accounts · 5.4 admin privileges · 12.7 remote access over VPN · 3.10 encryption in transit · 13.10 application-layer filtering | PR.AA · PR.IR · PR.DS · DE.CM |
+| **02** Container platform | 4.1 secure configuration · 4.4 · 12.2 secure network architecture · 13.4 filtering between segments · 2.1 software inventory · 16.7 hardened templates | PR.PS · PR.IR · ID.AM |
+| **03** Observability | 8.2 collect audit logs · 8.9 centralize · 8.3 adequate storage · 12.7 | PR.PS · DE.CM · DE.AE |
+| **04** Backups & recovery *(planned)* | 11.1–11.5 data recovery · 3.11 encryption at rest | PR.DS · RC.RP |
+
+**Open gaps, with next steps:** MFA for administrative access (6.4, 6.5), 90-day log retention (8.10), security alerting (13.1), automated patching and vulnerability scanning (7.3–7.6), anti-malware (10.1).
+
+**→ [Full mapping](./docs/controls-mapping.md)**: every control at safeguard level, where it's implemented, the test that verifies it, and every known gap.
+
+---
+
 ## Repository Structure
 
 ```text
 .
 ├── README.md                          # High-level architecture & case index
 ├── docs/
+│   ├── controls-mapping.md            # CIS v8 / NIST CSF 2.0 mapping, evidence links & known gaps
 │   └── architecture/                  # Diagram generator, SVG sources & dark/light PNGs
 └── cases/
     ├── case-01-perimeter-foundation-and-zero-trust-admin/

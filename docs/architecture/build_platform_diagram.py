@@ -318,8 +318,8 @@ def chip(x, y, label, w):
     text(x + w / 2, y + 20.5, label, 13.5, "bold", INK, "middle")
 
 
-chip(40, fy + 56, "CIS Controls v8 · CSC 2–9, 11–13, 16", 320)
-chip(374, fy + 56, "NIST CSF · Identify · Protect · Detect · Recover", 400)
+chip(40, fy + 56, "CIS Controls v8 · CSC 2–5, 7, 8, 11–13, 16", 360)
+chip(414, fy + 56, "NIST CSF 2.0 · Identify · Protect · Detect · Recover", 430)
 text(1880, fy + 77, "github.com/gabzaf/zero-trust-vps-platform", 17, "bold", INK, "end")
 
 add("</svg>")

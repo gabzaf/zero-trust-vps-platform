@@ -58,7 +58,7 @@ This platform is built so that **exposure is always an explicit, reviewable deci
 
 The layers also back each other up. If I publish a database port by mistake, the `DOCKER-USER` filter still drops it at the WAN. If a container is compromised, its internal network gives it no route to other stacks or to the internet. If a route for an admin tool leaks to the public side, the VPN allow-list returns `403`. That's the same defense-in-depth logic as Case 01, moved from the host perimeter into the platform.
 
-How these controls map to CIS Controls and NIST CSF is in the [README controls mapping](../../README.md#controls-mapping).
+How these controls map to CIS Controls and NIST CSF is in the [controls mapping](../../docs/controls-mapping.md#32-case-02-container-platform-and-ingress).
 
 ---
 

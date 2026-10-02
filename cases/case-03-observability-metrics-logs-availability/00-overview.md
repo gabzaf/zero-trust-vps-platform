@@ -57,7 +57,7 @@ Observability tools are some of the most privileged software on a server: they r
 
 That's the same rule as Cases 01 and 02, applied to the tools that watch them: **nothing is exposed unless it's declared, and nothing privileged is accepted without being named.**
 
-How these controls map to CIS Controls and NIST CSF is in the [README controls mapping](../../README.md#controls-mapping).
+How these controls map to CIS Controls and NIST CSF is in the [controls mapping](../../docs/controls-mapping.md#33-case-03-vpn-only-observability).
 
 ---
 

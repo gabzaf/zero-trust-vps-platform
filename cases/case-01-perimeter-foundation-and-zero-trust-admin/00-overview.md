@@ -49,7 +49,7 @@ This architecture was built around the idea that **no individual control should 
  
 If an SSH key were somehow leaked, it would still be useless without VPN access. If the VPN were compromised, the firewall would still block lateral movement. If the firewall had a misconfiguration, Cloudflare would still shield the origin IP and filter malicious payloads at the edge. This layered redundancy is what turns a single hardened server into a resilient perimeter.
 
-How these layers map to CIS Controls and NIST CSF is in the [README controls mapping](../../README.md#controls-mapping). Role-level notes (NIS2/RJC, QNRCS) are in [cybersecurity-officer](https://github.com/gabzaf/cybersecurity-officer).
+How these layers map to CIS Controls and NIST CSF is in the [controls mapping](../../docs/controls-mapping.md#31-case-01-perimeter-and-zero-trust-administration). Role-level notes (NIS2/RJC, QNRCS) are in [cybersecurity-officer](https://github.com/gabzaf/cybersecurity-officer).
  
 ---
 

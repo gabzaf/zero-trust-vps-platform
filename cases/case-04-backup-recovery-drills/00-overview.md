@@ -55,7 +55,7 @@ A backup job that reports success has proven one thing: it wrote files. It hasn'
 
 The same defense-in-depth logic as Cases 01–03 applies to the backups themselves: encrypted before they leave, stored with a different provider, and immutable for 30 days, so a compromised server can't take its own backups down with it.
 
-How these controls map to CIS Controls and NIST CSF is in the [README controls mapping](../../README.md#controls-mapping).
+How these controls map to CIS Controls and NIST CSF is in the [controls mapping](../../docs/controls-mapping.md#34-case-04-backups-and-recovery-planned).
 
 ---
 
