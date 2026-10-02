@@ -1,4 +1,4 @@
-# Phase 1: Production Layout & Docker Engine
+]# Phase 1: Production Layout & Docker Engine
 
 [← Overview](./00-overview.md) · **Phase 1 of 5** · [Next: Docker & the Host Firewall →](./02-docker-firewall.md)
 
@@ -80,11 +80,11 @@ The Linux **Filesystem Hierarchy Standard (FHS)** defines `/srv` as the place fo
 | `/srv/logs/{app}/` | Logs written to files instead of stdout | `/srv/logs/traefik/access.log` |
 | `/srv/backups/` | Local dumps before shipping offsite | `/srv/backups/app-db-20260101.sql.gz` |
 
-Separating configuration from state also separates their permissions: Compose files can be world-readable (`644`), sensitive files such as a stack's `.env` can be closed (`600`), and backups are root-only.
+Separating configuration from state also separates their permissions: Compose files can be world-readable (`644`), sensitive files such as a stack's `.env` can be closed (`600`) and backups are root-only.
 
 #### 1.4. Create the Base Structure
 <details>
-<summary><b>▶ View commands — creating /srv and its permissions</b></summary>
+<summary><b>▶ View commands — creating `/srv` and its permissions</b></summary>
 
 Create the directories:
 ```bash
