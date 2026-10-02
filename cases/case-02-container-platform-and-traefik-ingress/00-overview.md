@@ -25,7 +25,7 @@ flowchart LR
 ---
 
 * **Situation**: After Case 01 the server is locked down: key-only SSH through a private WireGuard tunnel, a default-DROP firewall that only lets Cloudflare reach ports 80/443 and the origin IP hidden behind Cloudflare. It's secure, but it serves nothing. Browsing the domain returns a Cloudflare 521/522 error because no service is listening on the origin.
-* **Task**: Turn the hardened host into a platform that can run services, without undoing anything Case 01 closed. Every public request must enter through a single, TLS-terminating ingress point. Services must be isolated from each other and from the internet. Their state must live somewhere predictable, their health must be measured instead of assumed and every update must have a way back.
+* **Task**: Turn the hardened host into a platform that can run services, without undoing anything Case 01 closed. Every public request must enter through a single, TLS-terminating ingress point. Services must be isolated from each other and from the internet. Their state must live in a fixed location under `/srv/data`, their health must be measured instead of assumed and every update must have a way back.
 * **What I did**:
   1. Defined a production layout under `/srv` (`apps`, `data`, `logs`, `backups`) with explicit ownership and permissions, so I always know where configuration and state live.
   2. Installed Docker Engine from Docker's official repository and hardened the daemon: log rotation, `live-restore`, `icc` off, `no-new-privileges` and file-descriptor limits.
