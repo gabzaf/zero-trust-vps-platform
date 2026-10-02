@@ -96,6 +96,10 @@ Status: PROTECTED | Layers: 5 | Origin: HIDDEN IP
 > [!WARNING]
 > **Attention**: The goal of Cloudflare WAF is not to replace the security of the local firewall, but rather to discard abusive requests as early as possible, saving VPS resources and ensuring that only legitimate requests reach the origin infrastructure.
 
+#### 12.2. WAF Core Concepts & Execution Precedence
+
+Three edge features filter requests before they ever reach the origin. Which one acts first depends on a fixed order, so it's worth understanding each one before writing rules.
+
 ##### WAF Custom Rules
 
 Edge WAF Custom Rules allows me to create access rules based on request properties such as source IP, country, HTTP headers or even the User Agent.
@@ -137,12 +141,15 @@ In the panel, select my account/domain and proceed to Security → Security rule
 
 ##### Rules Precedence Order
 
-For the resources presented, Cloudflare processes traffic in this order:
-1. Firewall Rules (Custom Rules)
-2. WAF Managed Rules
-3. Rate Limiting Rules
+Cloudflare evaluates these features in a fixed order of phases:
+1. HTTP DDoS attack protection
+2. Custom rules
+3. Rate limiting rules
+4. WAF managed rules
 
-The first matching rule is applied. I have to plan my rules considering this order.
+When a rule takes a terminating action (Block or a Challenge), evaluation stops and the later phases never run. A request blocked by a custom rule never counts toward a rate limit, and a request stopped by rate limiting never reaches the managed rules. I plan my rules with that order in mind.
+
+- Official Documentation Reference: https://developers.cloudflare.com/waf/feature-interoperability/
 
 I can simulate an HTTP request to understand the impact of the rules defined in Rules → Trace:
 
