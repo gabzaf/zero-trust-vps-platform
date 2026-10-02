@@ -194,7 +194,7 @@ The review also names what isn't done yet. Each item has a concrete next step:
 
 ---
 
-> This closes the observe layer. The platform is no longer a black box: metrics show how much, logs show what happened, availability checks show whether it answers, and none of it is reachable from the internet. The next step is resilience: proving the platform can be recovered when something is lost.
+> This closes the observe layer. The platform is no longer a black box: metrics show how much, logs show what happened, availability checks show whether it answers, and none of it is reachable from the internet. The next step is resilience: proving the platform can be recovered when something is lost, in [Case 04](../case-04-backup-recovery-drills/00-overview.md).
 
 ---
 

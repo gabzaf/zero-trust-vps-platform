@@ -14,64 +14,17 @@
 
 ## High-Level Architecture Diagram
 
-```mermaid
-graph TD
-    User["Web User - Internet"]
-    Attacker["Malicious Scanner or Bot"]
-    Admin["SysAdmin Remote Device"]
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./docs/architecture/platform-dark.png">
+  <img alt="Data-flow diagram of the platform in four trust zones (Internet, Cloudflare edge, AlmaLinux host, Docker origin) and two planes. Public traffic passes the Cloudflare WAF, a host firewall that accepts 80/443 only from Cloudflare, and Traefik before reaching containers; direct scans and SSH brute force are dropped. Administration happens only through WireGuard: SSH, Cockpit and VPN-only dashboards. Nightly encrypted backups go to Backblaze B2 with Object Lock (in progress)." src="./docs/architecture/platform-light.png">
+</picture>
 
-    subgraph Cloudflare_Edge["Cloudflare Edge Layer"]
-        CF_WAF["Cloudflare WAF (Custom Rules & Managed Rules)"]
-        CF_PROXY["Cloudflare Reverse Proxy (Strict TLS)"]
-        CF_WAF --> CF_PROXY
-    end
+- **Public path**: visitor → Cloudflare WAF and Full (Strict) TLS → host firewall (`DOCKER-USER` accepts 80/443 only from Cloudflare) → Traefik → application containers; databases sit on per-stack internal networks.
+- **Hostile traffic**: direct-to-origin scans and `:22` brute force are dropped before they reach any service; Fail2ban is the second line behind `sshd`.
+- **Admin path**: WireGuard only → SSH, Cockpit and the VPN-only admin UIs (Traefik dashboard, Portainer, Netdata, Grafana, Uptime Kuma) behind `vpn-allowlist`.
+- **Offsite**: nightly encrypted Restic backups to Backblaze B2 with Object Lock (Case 04, in progress).
 
-    subgraph Host_Firewall["Host Firewall Perimeter - iptables & Fail2ban"]
-        FW_CF["ALLOW: Cloudflare IPs Only (Ports 80/443 TCP)<br/>INPUT + DOCKER-USER chains"]
-        FW_WG["ALLOW: WireGuard (Port 51820 UDP)"]
-        FW_DROP["DEFAULT DROP: All Other WAN Inbound Traffic"]
-        F2B["Fail2ban: Automated Hostile IP Banning"]
-    end
-
-    subgraph Admin_Plane["Private Management Plane - WireGuard 10.10.10.0/24"]
-        WG_IF["WireGuard Interface (wg0 - 10.10.10.1)"]
-        SSH["Hardened OpenSSH (Ed25519 Keys Only, No Root, Scoped Sudo)"]
-        COCKPIT["Cockpit host view (10.10.10.1:9090 only)"]
-        WG_IF --> SSH
-        WG_IF --> COCKPIT
-    end
-
-    subgraph Origin_Layer["VPS Origin Platform - Docker"]
-        TRAEFIK["Traefik v3 Ingress<br/>Origin CA TLS 1.2+, Security Headers, Rate Limiting"]
-        APP["Application Containers (proxy network)"]
-        DB["Databases & Caches (internal network, no egress)"]
-        TRAEFIK --> APP --> DB
-    end
-
-    subgraph Observe_Layer["Observability - VPN-only UIs (Case 03)"]
-        UIS["Grafana, Netdata, Uptime Kuma, Portainer<br/>Traefik routers + vpn-allowlist"]
-        LOKI["Loki + Promtail<br/>loki-internal: no egress, not on proxy"]
-        UIS -->|LogQL| LOKI
-    end
-
-    subgraph Offsite["Offsite Backup - Backblaze B2 (Case 04)"]
-        B2["Restic repository<br/>encrypted client-side, Object Lock 30 days"]
-    end
-
-    User -->|HTTPS 443| CF_WAF
-    CF_PROXY -->|Strict TLS Proxy| FW_CF
-    FW_CF --> TRAEFIK
-
-    Attacker -.->|Direct WAN Scan| FW_DROP
-    Attacker -.->|":22 brute force, dropped before sshd"| FW_DROP
-    F2B -.->|"second line: watches sshd"| SSH
-
-    Admin -->|Encrypted VPN Tunnel| FW_WG
-    FW_WG --> WG_IF
-    WG_IF -->|VPN allow-list: Traefik dashboard| TRAEFIK
-    TRAEFIK -->|vpn-allowlist| UIS
-    Origin_Layer -.->|nightly encrypted backup| B2
-```
+Each component is tagged with the case that built it. The diagram is generated from code: see [`docs/architecture`](./docs/architecture/README.md).
 
 ---
 
@@ -133,6 +86,8 @@ Each case documents engineering decisions and trade-offs behind this platform fo
 ```text
 .
 ├── README.md                          # High-level architecture & case index
+├── docs/
+│   └── architecture/                  # Diagram generator, SVG sources & dark/light PNGs
 └── cases/
     ├── case-01-perimeter-foundation-and-zero-trust-admin/
     │   ├── 00-overview.md             # S.T.A.R. breakdown, architecture & phase index

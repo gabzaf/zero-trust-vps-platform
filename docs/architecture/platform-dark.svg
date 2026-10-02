@@ -1,0 +1,254 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1350" viewBox="0 0 1920 1350">
+<defs>
+<marker id="ah-data" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse"><path d="M1,1 L11.5,6 L1,11 L4,6 Z" fill="#5cc8e0"/></marker>
+<marker id="ah-admin" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse"><path d="M1,1 L11.5,6 L1,11 L4,6 Z" fill="#3fd18a"/></marker>
+<marker id="ah-block" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse"><path d="M1,1 L11.5,6 L1,11 L4,6 Z" fill="#ff6b5e"/></marker>
+<marker id="ah-backup" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse"><path d="M1,1 L11.5,6 L1,11 L4,6 Z" fill="#b197fc"/></marker>
+<pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.1" fill="#1c2633"/></pattern>
+</defs>
+<rect width="1920" height="1350" fill="#0b1016"/>
+<rect width="1920" height="1350" fill="url(#dots)"/>
+<text x="40" y="62" font-family="'DejaVu Sans Mono', 'Liberation Mono', monospace" font-size="38" font-weight="bold" font-style="normal" fill="#5cc8e0" text-anchor="start">Zero-Trust Linux VPS Platform</text>
+<text x="40" y="94" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="17" font-weight="normal" font-style="normal" fill="#8d99a8" text-anchor="start">Case 01 · Perimeter &amp; zero-trust admin   |   Case 02 · Container platform &amp; ingress   |   Case 03 · VPN-only observability   |   Case 04 · Backups &amp; recovery (in progress)</text>
+<text x="1880" y="60" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="19" font-weight="bold" font-style="normal" fill="#e6edf3" text-anchor="end">Gabriel Affonso</text>
+<text x="1880" y="86" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#8d99a8" text-anchor="end">Linux System Administrator · Porto</text>
+<line x1="40" y1="112" x2="1880" y2="112" stroke="#3a4554" stroke-width="1.4"/>
+<rect x="90" y="124" width="300" height="956" rx="18" fill="#170f12" stroke="#ff7a6b" stroke-width="1.8" stroke-dasharray="8 6"/>
+<text x="240.0" y="156" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" font-style="normal" fill="#ff7a6b" text-anchor="middle" letter-spacing="1.6">UNTRUSTED · INTERNET</text>
+<rect x="405" y="124" width="360" height="956" rx="18" fill="#171309" stroke="#f0a640" stroke-width="1.8" stroke-dasharray="8 6"/>
+<text x="585.0" y="156" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" font-style="normal" fill="#f0a640" text-anchor="middle" letter-spacing="1.6">EDGE · CLOUDFLARE</text>
+<rect x="780" y="124" width="420" height="956" rx="18" fill="#0d1420" stroke="#6ea8ff" stroke-width="1.8" stroke-dasharray="8 6"/>
+<text x="990.0" y="156" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" font-style="normal" fill="#6ea8ff" text-anchor="middle" letter-spacing="1.6">HOST · ALMALINUX VPS</text>
+<rect x="1215" y="124" width="665" height="956" rx="18" fill="#0c1712" stroke="#4fd18b" stroke-width="1.8" stroke-dasharray="8 6"/>
+<text x="1547.5" y="156" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" font-style="normal" fill="#4fd18b" text-anchor="middle" letter-spacing="1.6">ORIGIN · DOCKER PLATFORM</text>
+<rect x="90" y="620" width="1790" height="460" fill="#3fd18a" opacity="0.045"/>
+<line x1="90" y1="620" x2="1880" y2="620" stroke="#3fd18a" stroke-width="2" stroke-dasharray="10 6"/>
+<line x1="66" y1="136" x2="66" y2="608" stroke="#e6edf3" stroke-width="2"/>
+<text x="56" y="372.0" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13.5" font-weight="bold" font-style="normal" fill="#e6edf3" text-anchor="middle" letter-spacing="1.6" transform="rotate(-90 56 372.0)">DATA PLANE · PUBLIC</text>
+<line x1="66" y1="632" x2="66" y2="1068" stroke="#3fd18a" stroke-width="2"/>
+<text x="56" y="850.0" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13.5" font-weight="bold" font-style="normal" fill="#3fd18a" text-anchor="middle" letter-spacing="1.6" transform="rotate(-90 56 850.0)">MANAGEMENT · VPN ONLY</text>
+<rect x="115" y="231" width="250" height="118" rx="7" fill="#111821" stroke="#ff7a6b" stroke-width="1.6"/>
+<path d="M115,285 L115,238 Q115,231 122,231 L358,231 Q365,231 365,238 L365,285 Z" fill="#3a1b1e" fill-opacity="1" stroke="#ff7a6b" stroke-width="1.6"/>
+<text x="240.0" y="251" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" font-style="italic" fill="#8d99a8" text-anchor="middle">«actor»</text>
+<text x="240.0" y="274" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" font-style="normal" fill="#ff7a6b" text-anchor="middle">Web user</text>
+<text x="131" y="311" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">browser / client</text>
+<text x="131" y="333" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">HTTPS only</text>
+<rect x="115" y="488" width="250" height="118" rx="7" fill="#111821" stroke="#ff7a6b" stroke-width="1.6"/>
+<path d="M115,542 L115,495 Q115,488 122,488 L358,488 Q365,488 365,495 L365,542 Z" fill="#3a1b1e" fill-opacity="1" stroke="#ff7a6b" stroke-width="1.6"/>
+<text x="240.0" y="508" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" font-style="italic" fill="#8d99a8" text-anchor="middle">«actor»</text>
+<text x="240.0" y="531" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" font-style="normal" fill="#ff7a6b" text-anchor="middle">Scanner / bot</text>
+<text x="131" y="568" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">direct hits on origin IP</text>
+<text x="131" y="590" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">SSH brute force on :22</text>
+<rect x="425" y="190" width="320" height="198" rx="7" fill="#111821" stroke="#f0a640" stroke-width="1.6"/>
+<path d="M425,244 L425,197 Q425,190 432,190 L738,190 Q745,190 745,197 L745,244 Z" fill="#3a2a10" fill-opacity="1" stroke="#f0a640" stroke-width="1.6"/>
+<text x="585.0" y="210" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" font-style="italic" fill="#8d99a8" text-anchor="middle">«edge»</text>
+<text x="585.0" y="233" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" font-style="normal" fill="#f0a640" text-anchor="middle">Cloudflare</text>
+<rect x="708.0" y="198" width="29.0" height="20" rx="10" fill="#0b1016" stroke="#f0a640" stroke-width="1.2"/>
+<text x="722.5" y="212.5" font-family="'DejaVu Sans Mono', 'Liberation Mono', monospace" font-size="11.5" font-weight="bold" font-style="normal" fill="#f0a640" text-anchor="middle">01</text>
+<text x="441" y="270" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" font-style="normal" fill="#e6edf3" text-anchor="start">WAF</text>
+<text x="441" y="292" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">managed + custom rules</text>
+<text x="441" y="314" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">rate limiting</text>
+<line x1="425" y1="324" x2="745" y2="324" stroke="#f0a640" stroke-width="1.2"/>
+<text x="441" y="350" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" font-style="normal" fill="#e6edf3" text-anchor="start">Reverse proxy</text>
+<text x="441" y="372" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">Full (Strict) TLS to origin</text>
+<path d="M425,404 L729,404 L745,420 L745,460 L425,460 Z" fill="#161b22" stroke="#8d99a8" stroke-width="1.3"/>
+<path d="M729,404 L729,420 L745,420" fill="none" stroke="#8d99a8" stroke-width="1.3"/>
+<text x="438" y="427" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" font-style="italic" fill="#b9c2cd" text-anchor="start">Origin IP hidden: direct hits are dropped.</text>
+<text x="438" y="446" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" font-style="italic" fill="#b9c2cd" text-anchor="start">Cloudflare Tunnel planned (shared-IP gap).</text>
+<rect x="800" y="190" width="380" height="220" rx="7" fill="#111821" stroke="#6ea8ff" stroke-width="1.6"/>
+<path d="M800,244 L800,197 Q800,190 807,190 L1173,190 Q1180,190 1180,197 L1180,244 Z" fill="#15284a" fill-opacity="1" stroke="#6ea8ff" stroke-width="1.6"/>
+<text x="990.0" y="210" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" font-style="italic" fill="#8d99a8" text-anchor="middle">«firewall»</text>
+<text x="990.0" y="233" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" font-style="normal" fill="#6ea8ff" text-anchor="middle">iptables · default DROP</text>
+<rect x="1120.5" y="198" width="51.5" height="20" rx="10" fill="#0b1016" stroke="#6ea8ff" stroke-width="1.2"/>
+<text x="1146.25" y="212.5" font-family="'DejaVu Sans Mono', 'Liberation Mono', monospace" font-size="11.5" font-weight="bold" font-style="normal" fill="#6ea8ff" text-anchor="middle">01·02</text>
+<text x="816" y="270" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" font-style="normal" fill="#e6edf3" text-anchor="start">DOCKER-USER (FORWARD) · to containers</text>
+<text x="816" y="292" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">+ ACCEPT 80/443 ← Cloudflare CIDRs only</text>
+<text x="816" y="314" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">+ fails closed · cached Cloudflare list</text>
+<line x1="800" y1="324" x2="1180" y2="324" stroke="#6ea8ff" stroke-width="1.2"/>
+<text x="816" y="350" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" font-style="normal" fill="#e6edf3" text-anchor="start">INPUT · to the host</text>
+<text x="816" y="372" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">+ ACCEPT 51820/udp (WireGuard) · all on wg0</text>
+<text x="816" y="394" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">+ policy DROP: all other WAN inbound</text>
+<line x1="840" y1="410" x2="840" y2="523" stroke="#ff6b5e" stroke-width="1.8" stroke-dasharray="3 4"/>
+<text x="852" y="450" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13.5" font-weight="normal" font-style="italic" fill="#8d99a8" text-anchor="start" paint-order="stroke" stroke="#0b1016" stroke-width="5" stroke-linejoin="round">default policy</text>
+<circle cx="840" cy="540" r="17" fill="#111821" stroke="#ff6b5e" stroke-width="2.4"/>
+<path d="M829.46,529.46 L850.54,550.54 M850.54,529.46 L829.46,550.54" stroke="#ff6b5e" stroke-width="2.4" stroke-linecap="round"/>
+<text x="868" y="546" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" font-style="normal" fill="#ff6b5e" text-anchor="start">DROP · no matching rule</text>
+<rect x="1240" y="190" width="290" height="184" rx="7" fill="#111821" stroke="#4fd18b" stroke-width="1.6"/>
+<path d="M1240,244 L1240,197 Q1240,190 1247,190 L1523,190 Q1530,190 1530,197 L1530,244 Z" fill="#113322" fill-opacity="1" stroke="#4fd18b" stroke-width="1.6"/>
+<text x="1385.0" y="210" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" font-style="italic" fill="#8d99a8" text-anchor="middle">«ingress»</text>
+<text x="1385.0" y="233" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" font-style="normal" fill="#4fd18b" text-anchor="middle">Traefik v3</text>
+<rect x="1493.0" y="198" width="29.0" height="20" rx="10" fill="#0b1016" stroke="#4fd18b" stroke-width="1.2"/>
+<text x="1507.5" y="212.5" font-family="'DejaVu Sans Mono', 'Liberation Mono', monospace" font-size="11.5" font-weight="bold" font-style="normal" fill="#4fd18b" text-anchor="middle">02</text>
+<text x="1256" y="270" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">+ Origin CA cert · TLS 1.2+</text>
+<text x="1256" y="292" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">+ HSTS &amp; security headers</text>
+<text x="1256" y="314" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">+ per-client rate limiting</text>
+<text x="1256" y="336" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">+ VPN-only admin routers</text>
+<text x="1256" y="358" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">+ JSON access log (real client IP)</text>
+<rect x="1570" y="220" width="290" height="140" rx="7" fill="#111821" stroke="#4fd18b" stroke-width="1.6"/>
+<path d="M1570,274 L1570,227 Q1570,220 1577,220 L1853,220 Q1860,220 1860,227 L1860,274 Z" fill="#113322" fill-opacity="1" stroke="#4fd18b" stroke-width="1.6"/>
+<text x="1715.0" y="240" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" font-style="italic" fill="#8d99a8" text-anchor="middle">«container»</text>
+<text x="1715.0" y="263" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" font-style="normal" fill="#4fd18b" text-anchor="middle">Application containers</text>
+<rect x="1823.0" y="228" width="29.0" height="20" rx="10" fill="#0b1016" stroke="#4fd18b" stroke-width="1.2"/>
+<text x="1837.5" y="242.5" font-family="'DejaVu Sans Mono', 'Liberation Mono', monospace" font-size="11.5" font-weight="bold" font-style="normal" fill="#4fd18b" text-anchor="middle">02</text>
+<text x="1586" y="300" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">network: proxy</text>
+<text x="1586" y="322" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">icc off · no-new-privileges</text>
+<text x="1586" y="344" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">pinned official images</text>
+<rect x="1570" y="430" width="290" height="140" rx="7" fill="#111821" stroke="#4fd18b" stroke-width="1.6"/>
+<path d="M1570,484 L1570,437 Q1570,430 1577,430 L1853,430 Q1860,430 1860,437 L1860,484 Z" fill="#113322" fill-opacity="1" stroke="#4fd18b" stroke-width="1.6"/>
+<text x="1715.0" y="450" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" font-style="italic" fill="#8d99a8" text-anchor="middle">«container»</text>
+<text x="1715.0" y="473" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" font-style="normal" fill="#4fd18b" text-anchor="middle">Databases &amp; caches</text>
+<rect x="1823.0" y="438" width="29.0" height="20" rx="10" fill="#0b1016" stroke="#4fd18b" stroke-width="1.2"/>
+<text x="1837.5" y="452.5" font-family="'DejaVu Sans Mono', 'Liberation Mono', monospace" font-size="11.5" font-weight="bold" font-style="normal" fill="#4fd18b" text-anchor="middle">02</text>
+<text x="1586" y="510" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">per-stack internal network</text>
+<text x="1586" y="532" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">no egress · no published ports</text>
+<text x="1586" y="554" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">state: /srv/data bind mounts</text>
+<path d="M365,290 L425,290" fill="none" stroke="#5cc8e0" stroke-width="2.8" marker-end="url(#ah-data)"/>
+<circle cx="395" cy="290" r="14" fill="#5cc8e0" stroke="#0b1016" stroke-width="2.5"/>
+<text x="395" y="295" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" font-style="normal" fill="#0b1016" text-anchor="middle">1</text>
+<path d="M745,290 L800,290" fill="none" stroke="#5cc8e0" stroke-width="2.8" marker-end="url(#ah-data)"/>
+<circle cx="772" cy="290" r="14" fill="#5cc8e0" stroke="#0b1016" stroke-width="2.5"/>
+<text x="772" y="295" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" font-style="normal" fill="#0b1016" text-anchor="middle">2</text>
+<path d="M1180,290 L1240,290" fill="none" stroke="#5cc8e0" stroke-width="2.8" marker-end="url(#ah-data)"/>
+<circle cx="1210" cy="290" r="14" fill="#5cc8e0" stroke="#0b1016" stroke-width="2.5"/>
+<text x="1210" y="295" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" font-style="normal" fill="#0b1016" text-anchor="middle">3</text>
+<path d="M1530,290 L1570,290" fill="none" stroke="#5cc8e0" stroke-width="2.8" marker-end="url(#ah-data)"/>
+<circle cx="1550" cy="290" r="14" fill="#5cc8e0" stroke="#0b1016" stroke-width="2.5"/>
+<text x="1550" y="295" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" font-style="normal" fill="#0b1016" text-anchor="middle">4</text>
+<path d="M1715,360 L1715,430" fill="none" stroke="#5cc8e0" stroke-width="2.8" marker-end="url(#ah-data)"/>
+<circle cx="1715" cy="395.0" r="14" fill="#5cc8e0" stroke="#0b1016" stroke-width="2.5"/>
+<text x="1715" y="400.0" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" font-style="normal" fill="#0b1016" text-anchor="middle">5</text>
+<text x="1738" y="400.0" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" font-style="normal" fill="#8d99a8" text-anchor="start" paint-order="stroke" stroke="#0b1016" stroke-width="5" stroke-linejoin="round">internal network</text>
+<path d="M365,540 L820,540" fill="none" stroke="#ff6b5e" stroke-width="2.4" stroke-dasharray="8 6" marker-end="url(#ah-block)"/>
+<text x="582" y="528" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="14.5" font-weight="bold" font-style="normal" fill="#ff6b5e" text-anchor="middle" paint-order="stroke" stroke="#0b1016" stroke-width="5" stroke-linejoin="round">direct-to-origin scans · :22 brute force</text>
+<rect x="800" y="640" width="380" height="96" rx="7" fill="#111821" stroke="#3fd18a" stroke-width="1.6"/>
+<path d="M800,694 L800,647 Q800,640 807,640 L1173,640 Q1180,640 1180,647 L1180,694 Z" fill="#103a2c" fill-opacity="1" stroke="#3fd18a" stroke-width="1.6"/>
+<text x="990.0" y="660" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" font-style="italic" fill="#8d99a8" text-anchor="middle">«vpn»</text>
+<text x="990.0" y="683" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" font-style="normal" fill="#3fd18a" text-anchor="middle">WireGuard wg0</text>
+<rect x="1143.0" y="648" width="29.0" height="20" rx="10" fill="#0b1016" stroke="#3fd18a" stroke-width="1.2"/>
+<text x="1157.5" y="662.5" font-family="'DejaVu Sans Mono', 'Liberation Mono', monospace" font-size="11.5" font-weight="bold" font-style="normal" fill="#3fd18a" text-anchor="middle">01</text>
+<text x="816" y="720" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">10.10.10.1 · UDP 51820 (only admin ingress)</text>
+<rect x="115" y="629" width="250" height="118" rx="7" fill="#111821" stroke="#3fd18a" stroke-width="1.6"/>
+<path d="M115,683 L115,636 Q115,629 122,629 L358,629 Q365,629 365,636 L365,683 Z" fill="#103a2c" fill-opacity="1" stroke="#3fd18a" stroke-width="1.6"/>
+<text x="240.0" y="649" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" font-style="italic" fill="#8d99a8" text-anchor="middle">«actor»</text>
+<text x="240.0" y="672" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" font-style="normal" fill="#3fd18a" text-anchor="middle">SysAdmin</text>
+<text x="131" y="709" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">remote device</text>
+<text x="131" y="731" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">Ed25519 key + VPN peer</text>
+<path d="M425,722 L729,722 L745,738 L745,778 L425,778 Z" fill="#161b22" stroke="#8d99a8" stroke-width="1.3"/>
+<path d="M729,722 L729,738 L745,738" fill="none" stroke="#8d99a8" stroke-width="1.3"/>
+<text x="438" y="745" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" font-style="italic" fill="#b9c2cd" text-anchor="start">Not proxied by Cloudflare: admin</text>
+<text x="438" y="764" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" font-style="italic" fill="#b9c2cd" text-anchor="start">traffic never uses the public path.</text>
+<rect x="800" y="758" width="380" height="176" rx="7" fill="#111821" stroke="#3fd18a" stroke-width="1.6"/>
+<path d="M800,812 L800,765 Q800,758 807,758 L1173,758 Q1180,758 1180,765 L1180,812 Z" fill="#103a2c" fill-opacity="1" stroke="#3fd18a" stroke-width="1.6"/>
+<text x="990.0" y="778" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" font-style="italic" fill="#8d99a8" text-anchor="middle">«service»</text>
+<text x="990.0" y="801" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" font-style="normal" fill="#3fd18a" text-anchor="middle">OpenSSH</text>
+<rect x="1143.0" y="766" width="29.0" height="20" rx="10" fill="#0b1016" stroke="#3fd18a" stroke-width="1.2"/>
+<text x="1157.5" y="780.5" font-family="'DejaVu Sans Mono', 'Liberation Mono', monospace" font-size="11.5" font-weight="bold" font-style="normal" fill="#3fd18a" text-anchor="middle">01</text>
+<text x="816" y="838" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">Ed25519 keys only · no root · no passwords</text>
+<text x="816" y="860" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">scoped sudo · reachable only via wg0</text>
+<line x1="800" y1="870" x2="1180" y2="870" stroke="#3fd18a" stroke-width="1.2"/>
+<text x="816" y="896" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" font-style="normal" fill="#e6edf3" text-anchor="start">Fail2ban · second line of defense</text>
+<text x="816" y="918" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">bans IPs if :22 is ever exposed</text>
+<rect x="800" y="950" width="185" height="118" rx="7" fill="#111821" stroke="#3fd18a" stroke-width="1.6"/>
+<path d="M800,1004 L800,957 Q800,950 807,950 L978,950 Q985,950 985,957 L985,1004 Z" fill="#103a2c" fill-opacity="1" stroke="#3fd18a" stroke-width="1.6"/>
+<text x="892.5" y="970" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" font-style="italic" fill="#8d99a8" text-anchor="middle">«host view»</text>
+<text x="892.5" y="993" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" font-style="normal" fill="#3fd18a" text-anchor="middle">Cockpit</text>
+<rect x="948.0" y="958" width="29.0" height="20" rx="10" fill="#0b1016" stroke="#3fd18a" stroke-width="1.2"/>
+<text x="962.5" y="972.5" font-family="'DejaVu Sans Mono', 'Liberation Mono', monospace" font-size="11.5" font-weight="bold" font-style="normal" fill="#3fd18a" text-anchor="middle">03</text>
+<text x="816" y="1030" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">port 9090</text>
+<text x="816" y="1052" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">VPN only</text>
+<rect x="995" y="950" width="185" height="118" rx="7" fill="#111821" stroke="#b197fc" stroke-width="1.6" stroke-dasharray="7 5"/>
+<path d="M995,1004 L995,957 Q995,950 1002,950 L1173,950 Q1180,950 1180,957 L1180,1004 Z" fill="#2a2142" fill-opacity="0.55" stroke="#b197fc" stroke-width="1.6" stroke-dasharray="7 5"/>
+<text x="1087.5" y="970" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" font-style="italic" fill="#8d99a8" text-anchor="middle">«planned»</text>
+<text x="1087.5" y="993" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" font-style="normal" fill="#b197fc" text-anchor="middle">Restic</text>
+<rect x="1143.0" y="958" width="29.0" height="20" rx="10" fill="#0b1016" stroke="#b197fc" stroke-width="1.2"/>
+<text x="1157.5" y="972.5" font-family="'DejaVu Sans Mono', 'Liberation Mono', monospace" font-size="11.5" font-weight="bold" font-style="normal" fill="#b197fc" text-anchor="middle">04</text>
+<text x="1011" y="1030" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">nightly timer</text>
+<text x="1011" y="1052" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">encrypted, to B2</text>
+<rect x="1240" y="640" width="290" height="140" rx="7" fill="#111821" stroke="#3fd18a" stroke-width="1.6"/>
+<path d="M1240,694 L1240,647 Q1240,640 1247,640 L1523,640 Q1530,640 1530,647 L1530,694 Z" fill="#103a2c" fill-opacity="1" stroke="#3fd18a" stroke-width="1.6"/>
+<text x="1385.0" y="660" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" font-style="italic" fill="#8d99a8" text-anchor="middle">«routers»</text>
+<text x="1385.0" y="683" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" font-style="normal" fill="#3fd18a" text-anchor="middle">VPN-only admin UIs</text>
+<rect x="1470.5" y="648" width="51.5" height="20" rx="10" fill="#0b1016" stroke="#3fd18a" stroke-width="1.2"/>
+<text x="1496.25" y="662.5" font-family="'DejaVu Sans Mono', 'Liberation Mono', monospace" font-size="11.5" font-weight="bold" font-style="normal" fill="#3fd18a" text-anchor="middle">02·03</text>
+<text x="1256" y="720" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">Traefik dashboard · Portainer</text>
+<text x="1256" y="742" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">Netdata · Grafana · Uptime Kuma</text>
+<text x="1256" y="764" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">ipAllowList · split-horizon DNS</text>
+<rect x="1570" y="640" width="290" height="118" rx="7" fill="#111821" stroke="#3fd18a" stroke-width="1.6"/>
+<path d="M1570,694 L1570,647 Q1570,640 1577,640 L1853,640 Q1860,640 1860,647 L1860,694 Z" fill="#103a2c" fill-opacity="1" stroke="#3fd18a" stroke-width="1.6"/>
+<text x="1715.0" y="660" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" font-style="italic" fill="#8d99a8" text-anchor="middle">«log pipeline»</text>
+<text x="1715.0" y="683" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" font-style="normal" fill="#3fd18a" text-anchor="middle">Loki + Promtail</text>
+<rect x="1823.0" y="648" width="29.0" height="20" rx="10" fill="#0b1016" stroke="#3fd18a" stroke-width="1.2"/>
+<text x="1837.5" y="662.5" font-family="'DejaVu Sans Mono', 'Liberation Mono', monospace" font-size="11.5" font-weight="bold" font-style="normal" fill="#3fd18a" text-anchor="middle">03</text>
+<text x="1586" y="720" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">container and host logs</text>
+<text x="1586" y="742" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">7-day retention · not published</text>
+<rect x="1570" y="778" width="290" height="118" rx="7" fill="#111821" stroke="#3fd18a" stroke-width="1.6"/>
+<path d="M1570,832 L1570,785 Q1570,778 1577,778 L1853,778 Q1860,778 1860,785 L1860,832 Z" fill="#103a2c" fill-opacity="1" stroke="#3fd18a" stroke-width="1.6"/>
+<text x="1715.0" y="798" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" font-style="italic" fill="#8d99a8" text-anchor="middle">«process»</text>
+<text x="1715.0" y="821" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" font-style="normal" fill="#3fd18a" text-anchor="middle">Change cycle</text>
+<rect x="1823.0" y="786" width="29.0" height="20" rx="10" fill="#0b1016" stroke="#3fd18a" stroke-width="1.2"/>
+<text x="1837.5" y="800.5" font-family="'DejaVu Sans Mono', 'Liberation Mono', monospace" font-size="11.5" font-weight="bold" font-style="normal" fill="#3fd18a" text-anchor="middle">02</text>
+<text x="1586" y="858" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">pinned images · changelog-gated</text>
+<text x="1586" y="880" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">snapshot → change → rollback</text>
+<path d="M365,688 L800,688" fill="none" stroke="#3fd18a" stroke-width="2.4" stroke-dasharray="9 6" marker-end="url(#ah-admin)"/>
+<circle cx="582" cy="688" r="15" fill="#3fd18a" stroke="#0b1016" stroke-width="2.5"/>
+<text x="582" y="693" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" font-style="normal" fill="#0b1016" text-anchor="middle">A1</text>
+<text x="582" y="664" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" font-style="normal" fill="#3fd18a" text-anchor="middle" paint-order="stroke" stroke="#0b1016" stroke-width="5" stroke-linejoin="round">WireGuard tunnel · UDP 51820</text>
+<path d="M990,736 L990,758" fill="none" stroke="#3fd18a" stroke-width="2.4" stroke-dasharray="9 6" marker-end="url(#ah-admin)"/>
+<circle cx="1018" cy="747.0" r="15" fill="#3fd18a" stroke="#0b1016" stroke-width="2.5"/>
+<text x="1018" y="752.0" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" font-style="normal" fill="#0b1016" text-anchor="middle">A2</text>
+<path d="M1180,688 L1240,688" fill="none" stroke="#3fd18a" stroke-width="2.4" stroke-dasharray="9 6" marker-end="url(#ah-admin)"/>
+<circle cx="1210" cy="688" r="15" fill="#3fd18a" stroke="#0b1016" stroke-width="2.5"/>
+<text x="1210" y="693" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" font-style="normal" fill="#0b1016" text-anchor="middle">A3</text>
+<path d="M1495,640 L1495,374" fill="none" stroke="#3fd18a" stroke-width="2.4" stroke-dasharray="9 6" marker-end="url(#ah-admin)"/>
+<circle cx="1495" cy="545" r="15" fill="#3fd18a" stroke="#0b1016" stroke-width="2.5"/>
+<text x="1495" y="550" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" font-style="normal" fill="#0b1016" text-anchor="middle">A4</text>
+<text x="1478" y="537" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13.5" font-weight="normal" font-style="italic" fill="#3fd18a" text-anchor="end" paint-order="stroke" stroke="#0b1016" stroke-width="5" stroke-linejoin="round">routed by</text>
+<text x="1478" y="555" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13.5" font-weight="normal" font-style="italic" fill="#3fd18a" text-anchor="end" paint-order="stroke" stroke="#0b1016" stroke-width="5" stroke-linejoin="round">Traefik</text>
+<path d="M1530,698 L1570,698" fill="none" stroke="#3fd18a" stroke-width="2.4" stroke-dasharray="9 6" marker-end="url(#ah-admin)"/>
+<path d="M1180,837 L1570,837" fill="none" stroke="#3fd18a" stroke-width="2.4" stroke-dasharray="9 6" marker-end="url(#ah-admin)"/>
+<circle cx="1375" cy="837" r="15" fill="#3fd18a" stroke="#0b1016" stroke-width="2.5"/>
+<text x="1375" y="842" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" font-style="normal" fill="#0b1016" text-anchor="middle">A5</text>
+<text x="1375" y="813" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" font-style="normal" fill="#3fd18a" text-anchor="middle" paint-order="stroke" stroke="#0b1016" stroke-width="5" stroke-linejoin="round">operate over SSH</text>
+<rect x="90" y="1092" width="1790" height="138" rx="18" fill="#130f1d" stroke="#b197fc" stroke-width="1.8" stroke-dasharray="8 6"/>
+<text x="116" y="1126" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" font-style="normal" fill="#b197fc" text-anchor="start" letter-spacing="1.6">OFFSITE · BACKBLAZE B2</text>
+<text x="116" y="1150" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" font-style="italic" fill="#8d99a8" text-anchor="start">Case 04 · in progress</text>
+<text x="116" y="1174" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" font-style="italic" fill="#8d99a8" text-anchor="start">another provider, another account</text>
+<rect x="800" y="1102" width="380" height="118" rx="7" fill="#111821" stroke="#b197fc" stroke-width="1.6" stroke-dasharray="7 5"/>
+<path d="M800,1156 L800,1109 Q800,1102 807,1102 L1173,1102 Q1180,1102 1180,1109 L1180,1156 Z" fill="#2a2142" fill-opacity="0.55" stroke="#b197fc" stroke-width="1.6" stroke-dasharray="7 5"/>
+<text x="990.0" y="1122" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="normal" font-style="italic" fill="#8d99a8" text-anchor="middle">«offsite»</text>
+<text x="990.0" y="1145" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" font-style="normal" fill="#b197fc" text-anchor="middle">Restic repository</text>
+<rect x="1143.0" y="1110" width="29.0" height="20" rx="10" fill="#0b1016" stroke="#b197fc" stroke-width="1.2"/>
+<text x="1157.5" y="1124.5" font-family="'DejaVu Sans Mono', 'Liberation Mono', monospace" font-size="11.5" font-weight="bold" font-style="normal" fill="#b197fc" text-anchor="middle">04</text>
+<text x="816" y="1182" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">encrypted client-side · Object Lock 30 days</text>
+<text x="816" y="1204" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#c9d3df" text-anchor="start">the server's key can't delete locked versions</text>
+<path d="M1087,1068 L1087,1102" fill="none" stroke="#b197fc" stroke-width="2.4" stroke-dasharray="6 5" marker-end="url(#ah-backup)"/>
+<path d="M1240,1114 L1844,1114 L1860,1130 L1860,1170 L1240,1170 Z" fill="#161b22" stroke="#8d99a8" stroke-width="1.3"/>
+<path d="M1844,1114 L1844,1130 L1860,1130" fill="none" stroke="#8d99a8" stroke-width="1.3"/>
+<text x="1253" y="1137" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" font-style="italic" fill="#b9c2cd" text-anchor="start">Next: restore runbooks (one file · one app's data · a whole host)</text>
+<text x="1253" y="1156" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="14" font-weight="normal" font-style="italic" fill="#b9c2cd" text-anchor="start">and three timed recovery drills, published with Case 04.</text>
+<line x1="40" y1="1246" x2="1880" y2="1246" stroke="#3a4554" stroke-width="1.4"/>
+<path d="M40,1276 L90,1276" fill="none" stroke="#5cc8e0" stroke-width="2.8" marker-end="url(#ah-data)"/>
+<text x="102" y="1281" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#8d99a8" text-anchor="start">public data flow</text>
+<path d="M262,1276 L312,1276" fill="none" stroke="#3fd18a" stroke-width="2.4" stroke-dasharray="9 6" marker-end="url(#ah-admin)"/>
+<text x="324" y="1281" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#8d99a8" text-anchor="start">management (VPN only)</text>
+<path d="M530,1276 L580,1276" fill="none" stroke="#ff6b5e" stroke-width="2.4" stroke-dasharray="8 6" marker-end="url(#ah-block)"/>
+<text x="592" y="1281" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#8d99a8" text-anchor="start">blocked / hostile</text>
+<path d="M760,1276 L810,1276" fill="none" stroke="#b197fc" stroke-width="2.4" stroke-dasharray="6 5" marker-end="url(#ah-backup)"/>
+<text x="822" y="1281" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#8d99a8" text-anchor="start">backup (planned)</text>
+<circle cx="1000" cy="1276" r="12" fill="#111821" stroke="#ff6b5e" stroke-width="2.4"/>
+<path d="M992.56,1268.56 L1007.44,1283.44 M1007.44,1268.56 L992.56,1283.44" stroke="#ff6b5e" stroke-width="2.4" stroke-linecap="round"/>
+<text x="1021" y="1281" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#8d99a8" text-anchor="start">dropped</text>
+<circle cx="1125" cy="1276" r="14" fill="#5cc8e0" stroke="#0b1016" stroke-width="2.5"/>
+<text x="1125" y="1281" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" font-style="normal" fill="#0b1016" text-anchor="middle">1</text>
+<text x="1148" y="1281" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#8d99a8" text-anchor="start">sequence</text>
+<rect x="1249.0" y="1266" width="29.0" height="20" rx="10" fill="#0b1016" stroke="#e6edf3" stroke-width="1.2"/>
+<text x="1263.5" y="1280.5" font-family="'DejaVu Sans Mono', 'Liberation Mono', monospace" font-size="11.5" font-weight="bold" font-style="normal" fill="#e6edf3" text-anchor="middle">03</text>
+<text x="1294" y="1281" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#8d99a8" text-anchor="start">built in Case 03</text>
+<rect x="1460" y="1266" width="40" height="20" rx="4" fill="none" stroke="#b197fc" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="1510" y="1281" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15" font-weight="normal" font-style="normal" fill="#8d99a8" text-anchor="start">in progress</text>
+<rect x="40" y="1302" width="320" height="30" rx="15" fill="#111821" stroke="#8d99a8" stroke-width="1.3"/>
+<text x="200.0" y="1322.5" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13.5" font-weight="bold" font-style="normal" fill="#e6edf3" text-anchor="middle">CIS Controls v8 · CSC 2–9, 11–13, 16</text>
+<rect x="374" y="1302" width="400" height="30" rx="15" fill="#111821" stroke="#8d99a8" stroke-width="1.3"/>
+<text x="574.0" y="1322.5" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="13.5" font-weight="bold" font-style="normal" fill="#e6edf3" text-anchor="middle">NIST CSF · Identify · Protect · Detect · Recover</text>
+<text x="1880" y="1323" font-family="'Liberation Sans', Arial, Helvetica, sans-serif" font-size="17" font-weight="bold" font-style="normal" fill="#e6edf3" text-anchor="end">github.com/gabzaf/zero-trust-vps-platform</text>
+</svg>
