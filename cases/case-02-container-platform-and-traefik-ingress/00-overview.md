@@ -16,7 +16,7 @@
 flowchart LR
     S["<b>Situation</b><br/>- Hardened, invisible VPS from Case 01<br/>- Cloudflare answers 521/522: nothing serves the origin<br/>- No standard for running, storing or updating services"]
     T["<b>Task</b><br/>- Build a container platform without reopening the perimeter<br/>- One ingress point for all public traffic<br/>- Isolate services from each other and from the internet<br/>- Make state, health and updates predictable"]
-    A["<b>Action</b><br/>- Standardize /srv for apps, data, logs, backups, secrets<br/>- Install and harden Docker Engine<br/>- Close the Docker firewall bypass with a DOCKER-USER filter<br/>- Segment networks: shared proxy + per-stack internal<br/>- Bind-mounted state, healthchecks, restart policies<br/>- Pinned versions and a rollback-first change cycle<br/>- Traefik v3 with Origin TLS, middlewares, VPN-only dashboard"]
+    A["<b>Action</b><br/>- Standardize /srv for apps, data, logs and backups<br/>- Install and harden Docker Engine<br/>- Close the Docker firewall bypass with a DOCKER-USER filter<br/>- Segment networks: shared proxy + per-stack internal<br/>- Bind-mounted state, healthchecks, restart policies<br/>- Pinned versions and a rollback-first change cycle<br/>- Traefik v3 with Origin TLS, middlewares, VPN-only dashboard"]
     R["<b>Result</b><br/>- One public entry point: Traefik on 443 behind Cloudflare<br/>- Direct-to-origin connections still time out<br/>- Databases unreachable from other stacks and the internet<br/>- Data survives container recreation<br/>- Updates are reversible by tag or snapshot<br/>- Admin dashboard reachable only through the VPN"]
 
     S --> T --> A --> R
@@ -27,7 +27,7 @@ flowchart LR
 * **Situation**: After Case 01 the server is locked down: key-only SSH through a private WireGuard tunnel, a default-DROP firewall that only lets Cloudflare reach ports 80/443, and the origin IP hidden behind Cloudflare. It's secure, but it serves nothing. Browsing the domain returns a Cloudflare 521/522 error because no service is listening on the origin.
 * **Task**: Turn the hardened host into a platform that can run services, without undoing anything Case 01 closed. Every public request must enter through a single, TLS-terminating ingress point. Services must be isolated from each other and from the internet. Their state must live somewhere predictable, their health must be measured instead of assumed, and every update must have a way back.
 * **What I did**:
-  1. Defined a production layout under `/srv` (`apps`, `data`, `logs`, `backups`, `secrets`) with explicit ownership and permissions, so I always know where configuration and state live.
+  1. Defined a production layout under `/srv` (`apps`, `data`, `logs`, `backups`) with explicit ownership and permissions, so I always know where configuration and state live.
   2. Installed Docker Engine from Docker's official repository and hardened the daemon: log rotation, `live-restore`, `icc` off, `no-new-privileges` and file-descriptor limits.
   3. Proved that ports published by Docker skip the `INPUT` chain my Case 01 firewall relies on, then closed that gap with a Cloudflare-only filter in Docker's `DOCKER-USER` chain that fails closed and reloads on boot.
   4. Segmented the container networks: one shared `proxy` network for what Traefik must reach, and a separate internal network per stack, with no internet access, for databases and caches.

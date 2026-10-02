@@ -115,12 +115,14 @@ The configuration follows the `/srv` convention from Phase 1:
     ├── tls.yml          # dynamic: Origin certificate and TLS policy
     └── middlewares.yml  # dynamic: reusable middlewares
 
+/srv/data/traefik/       # per-app convention from Phase 1; empty for now
+
 /srv/logs/traefik/
 ├── traefik.log          # Traefik's own log
 └── access.log           # one JSON line per request
 ```
 
-Traefik keeps no state of its own here: the certificate lives in `/etc/ssl/cloudflare` (Case 01), so there's no `/srv/data/traefik`.
+`/srv/data/traefik` follows the per-app convention from Phase 1. It stays empty for now: the certificate lives in `/etc/ssl/cloudflare` (Case 01), not in a file Traefik manages.
 
 **Prerequisites** (don't continue unless all are true):
 - [x] Wildcard `*` record proxied (orange cloud), Origin certificate in `/etc/ssl/cloudflare/`, Full (Strict) active (Case 01, Phase 4)
@@ -131,8 +133,8 @@ Traefik keeps no state of its own here: the certificate lives in `/etc/ssl/cloud
 <summary><b>▶ View commands — Traefik directories</b></summary>
 
 ```bash
-sudo mkdir -p /srv/apps/traefik/dynamic /srv/logs/traefik
-sudo chown -R root:root /srv/apps/traefik /srv/logs/traefik
+sudo mkdir -p /srv/apps/traefik/dynamic /srv/data/traefik /srv/logs/traefik
+sudo chown -R root:root /srv/apps/traefik /srv/data/traefik /srv/logs/traefik
 ```
 Traefik's configuration is root-owned: changing how the internet reaches the platform is an administrative act, not a day-to-day one.
 </details>

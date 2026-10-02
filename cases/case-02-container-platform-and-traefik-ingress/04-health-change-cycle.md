@@ -171,7 +171,8 @@ services:
   db:
     image: postgres:16.4-alpine
     restart: unless-stopped
-    env_file: /srv/secrets/example.env      # POSTGRES_PASSWORD lives here, not in Compose
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASS}         # from /srv/apps/example/.env (600), never written in Compose
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s

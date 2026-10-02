@@ -70,8 +70,7 @@ The Linux **Filesystem Hierarchy Standard (FHS)** defines `/srv` as the place fo
 │   └── {app}/
 ├── logs/       # App logs kept outside Docker           (<username>, 755)
 │   └── {app}/
-├── backups/    # Local backup staging before offsite    (root, 700)
-└── secrets/    # Credentials and .env material          (root, 700)
+└── backups/    # Local backup staging before offsite    (root, 700)
 ```
 
 | Directory | Content | Example |
@@ -80,9 +79,8 @@ The Linux **Filesystem Hierarchy Standard (FHS)** defines `/srv` as the place fo
 | `/srv/data/{app}/` | Persistent state mounted into containers | `/srv/data/uptime-kuma/` |
 | `/srv/logs/{app}/` | Logs written to files instead of stdout | `/srv/logs/traefik/access.log` |
 | `/srv/backups/` | Local dumps before shipping offsite | `/srv/backups/app-db-20260101.sql.gz` |
-| `/srv/secrets/` | Secrets that must never sit in a Compose file | `/srv/secrets/app.env` |
 
-Separating configuration from state also separates their permissions: Compose files can be world-readable, while backups and secrets are root-only.
+Separating configuration from state also separates their permissions: Compose files can be world-readable (`644`), sensitive files such as a stack's `.env` can be closed (`600`), and backups are root-only.
 
 #### 1.4. Create the Base Structure
 <details>
@@ -90,7 +88,7 @@ Separating configuration from state also separates their permissions: Compose fi
 
 Create the directories:
 ```bash
-sudo mkdir -p /srv/{apps,data,logs,backups,secrets}
+sudo mkdir -p /srv/{apps,data,logs,backups}
 ```
 
 Day-to-day directories belong to the administrative user:
@@ -99,10 +97,10 @@ sudo chown -R <username>:<username> /srv/{apps,data,logs}
 sudo chmod 755 /srv/apps /srv/data /srv/logs
 ```
 
-Backups and secrets belong to root and are closed to everyone else:
+Backups belong to root and are closed to everyone else:
 ```bash
-sudo chown root:root /srv/backups /srv/secrets
-sudo chmod 700 /srv/backups /srv/secrets
+sudo chown root:root /srv/backups
+sudo chmod 700 /srv/backups
 ```
 
 Verify:
@@ -110,12 +108,11 @@ Verify:
 ls -la /srv
 ```
 ```text
-drwxr-xr-x.  7 root       root       4096 ... .
+drwxr-xr-x.  6 root       root       4096 ... .
 drwxr-xr-x.  2 <username> <username> 4096 ... apps
 drwx------.  2 root       root       4096 ... backups
 drwxr-xr-x.  2 <username> <username> 4096 ... data
 drwxr-xr-x.  2 <username> <username> 4096 ... logs
-drwx------.  2 root       root       4096 ... secrets
 ```
 </details>
 
@@ -125,7 +122,6 @@ drwx------.  2 root       root       4096 ... secrets
 | `/srv/data/` | `755` | Parent directory only; each `/srv/data/{app}/` follows its container's UID ([Phase 3](./03-networks-state.md)) |
 | `/srv/logs/` | `755` | Logs can be read for debugging |
 | `/srv/backups/` | `700` | Backups contain sensitive data |
-| `/srv/secrets/` | `700` | Credentials are root-only |
 
 #### 1.5. Application Directory Convention
 Every new application follows the same pattern:
@@ -151,7 +147,7 @@ services:
 
 #### 1.6. Expected End State
 - `/srv/{apps,data,logs}` exist and belong to `<username>`;
-- `/srv/{backups,secrets}` exist, belong to root and are closed (`700`);
+- `/srv/backups` exists, belongs to root and is closed (`700`);
 - every future service has an obvious home for its configuration and its state.
 
 ---
