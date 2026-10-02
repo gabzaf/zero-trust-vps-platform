@@ -1,5 +1,5 @@
 # zero-trust-vps-platform
-### *Cloudflare Edge, Zero-Trust Perimeter, WireGuard S2C, Host Firewall, Segmented Container Platform & Traefik Ingress*
+### *Cloudflare Edge, Zero-Trust Perimeter, WireGuard S2C, Host Firewall, Segmented Container Platform, Traefik Ingress & VPN-only Observability*
 
 [![Linux](https://img.shields.io/badge/Linux-%20AlmaLinux-E95420?logo=linux&logoColor=white)](#)
 [![Security](https://img.shields.io/badge/Security-Zero--Trust%20Perimeter-success?logo=shield&logoColor=white)](#)
@@ -7,6 +7,7 @@
 [![WireGuard](https://img.shields.io/badge/VPN-WireGuard%20S2C-88171A?logo=wireguard&logoColor=white)](#)
 [![Docker](https://img.shields.io/badge/Containers-Docker%20Engine-2496ED?logo=docker&logoColor=white)](#)
 [![Traefik](https://img.shields.io/badge/Ingress-Traefik%20v3-24A1C1?logo=traefikproxy&logoColor=white)](#)
+[![Observability](https://img.shields.io/badge/Observability-Loki%20%2B%20Grafana%20%2B%20Netdata-F46800?logo=grafana&logoColor=white)](#)
 
 ---
 
@@ -34,7 +35,9 @@ graph TD
     subgraph Admin_Plane["Private Management Plane - WireGuard 10.10.10.0/24"]
         WG_IF["WireGuard Interface (wg0 - 10.10.10.1)"]
         SSH["Hardened OpenSSH (Ed25519 Keys Only, No Root, Scoped Sudo)"]
+        COCKPIT["Cockpit host view (10.10.10.1:9090 only)"]
         WG_IF --> SSH
+        WG_IF --> COCKPIT
     end
 
     subgraph Origin_Layer["VPS Origin Platform - Docker"]
@@ -44,28 +47,36 @@ graph TD
         TRAEFIK --> APP --> DB
     end
 
+    subgraph Observe_Layer["Observability - VPN-only UIs (Case 03)"]
+        UIS["Grafana, Netdata, Uptime Kuma, Portainer<br/>Traefik routers + vpn-allowlist"]
+        LOKI["Loki + Promtail<br/>loki-internal: no egress, not on proxy"]
+        UIS -->|LogQL| LOKI
+    end
+
     User -->|HTTPS 443| CF_WAF
     CF_PROXY -->|Strict TLS Proxy| FW_CF
     FW_CF --> TRAEFIK
 
     Attacker -.->|Direct WAN Scan| FW_DROP
-    Attacker -.->|Brute Force Attempt| F2B
+    Attacker -.->|":22 brute force, dropped before sshd"| FW_DROP
+    F2B -.->|"second line: watches sshd"| SSH
 
     Admin -->|Encrypted VPN Tunnel| FW_WG
     FW_WG --> WG_IF
     WG_IF -->|VPN allow-list: Traefik dashboard| TRAEFIK
+    TRAEFIK -->|vpn-allowlist| UIS
 ```
 
 ---
 
 ## Controls mapping
 
-This host is built as **defense in depth** with **Zero Trust administration**: the admin path is identity plus VPN, not a public SSH port. Case 02 carries the same model into the container platform: nothing is exposed unless it's explicitly declared.
+This host is built as **defense in depth** with **Zero Trust administration**: the admin path is identity plus VPN, not a public SSH port. Case 02 carries the same model into the container platform: nothing is exposed unless it's explicitly declared. Case 03 applies it to the tools that watch the platform: every dashboard is part of the admin plane.
 
 | Implemented | CIS Controls v8 | NIST CSF | Case |
 | --- | --- | --- | :---: |
 | Ed25519 SSH, no root, no password auth, scoped sudo | CSC 5–6 Account & Access Control | Protect | 01 |
-| WireGuard S2C; SSH only on `10.10.10.0/24` | CSC 12 Network Infrastructure | Protect | 01 |
+| WireGuard S2C; SSH reachable only via `wg0` | CSC 12 Network Infrastructure | Protect | 01 |
 | iptables Default-DROP; 80/443 only from Cloudflare IPs | CSC 12–13 Network Monitoring and Defense | Protect / Detect | 01 |
 | Fail2ban | CSC 8 Audit Log Management, CSC 13 | Detect | 01 |
 | Cloudflare Full (Strict) TLS + Origin CA | CSC 3 Data Protection | Protect | 01 |
@@ -78,6 +89,15 @@ This host is built as **defense in depth** with **Zero Trust administration**: t
 | VPN-only admin routers (`ipAllowList`) and split-horizon dashboard | CSC 6 Access Control Management | Protect | 02 |
 | JSON access logs with the real client IP | CSC 8 Audit Log Management | Detect | 02 |
 | Bind-mounted state under `/srv/data`; snapshots before changes | CSC 11 Data Recovery | Recover | 02 |
+| Every admin UI VPN-only: split-horizon DNS, `vpn-allowlist`, no published ports | CSC 6 Access Control Management, CSC 12 Network Infrastructure | Protect | 03 |
+| Cockpit bound to the WireGuard address only (no public or IPv6 listener) | CSC 4 Secure Configuration, CSC 12 | Protect | 03 |
+| Centralized logs: containers, journal (`sshd`, `sudo`, Fail2ban, kernel), Traefik access log | CSC 8 Audit Log Management | Detect | 03 |
+| 7-day log retention with automatic deletion; Traefik log rotation | CSC 8 Audit Log Management | Detect | 03 |
+| Log store isolated (internal network, no egress); non-root Loki and Grafana; file-based admin secret | CSC 4 Secure Configuration, CSC 12 | Protect | 03 |
+| Security queries: admin logins, `sudo`, bans, VPN-allow-list `403`s, 5xx, 4xx sources | CSC 8, CSC 13 Network Monitoring and Defense | Detect | 03 |
+| Per-second host and container metrics (Netdata) | — (operational monitoring) | Detect | 03 |
+| End-to-end availability through Cloudflare; container health via the Docker API | — (operational monitoring) | Detect | 03 |
+| Inventory of every Docker-socket consumer, with justification | CSC 2 Software Inventory, CSC 4 Secure Configuration | Identify | 03 |
 
 Governance and NIS2/RJC study notes live in [cybersecurity-officer](https://github.com/gabzaf/cybersecurity-officer), not in this repo.
 
@@ -91,6 +111,7 @@ Each case documents engineering decisions and trade-offs behind this platform fo
 | :--- | :--- | :--- | :---: |
 | **[Case 01](./cases/case-01-perimeter-foundation-and-zero-trust-admin/00-overview.md)** | VPS Perimeter Foundation & Zero-Trust Administration | Cloudflare Proxy & WAF, WireGuard, iptables, Fail2ban, SSH Hardening | 🟢 Published |
 | **[Case 02](./cases/case-02-container-platform-and-traefik-ingress/00-overview.md)** | Segmented Container Platform & Traefik Ingress | Docker Engine, `DOCKER-USER` filtering, network segmentation, Traefik v3, Origin TLS | 🟢 Published |
+| **[Case 03](./cases/case-03-observability-metrics-logs-availability/00-overview.md)** | VPN-only Observability: Metrics, Logs & Availability | Cockpit, Portainer, Netdata, Loki + Promtail + Grafana, Uptime Kuma | 🟡 In review |
 
 ---
 
@@ -107,11 +128,19 @@ Each case documents engineering decisions and trade-offs behind this platform fo
     │   ├── 03-firewall-monitoring.md  # Phase 3: iptables Default-DROP firewall & Fail2ban
     │   ├── 04-cloudflare-tls.md       # Phase 4: Cloudflare Proxy, Origin CA & Full (Strict) SSL
     │   └── 05-cloudflare-waf.md       # Phase 5: Cloudflare WAF Custom Rules & Edge Security
-    └── case-02-container-platform-and-traefik-ingress/
-        ├── 00-overview.md                  # S.T.A.R. breakdown, guiding principle & phase index
-        ├── 01-srv-layout-docker-engine.md  # Phase 1: /srv production layout & hardened Docker Engine
-        ├── 02-docker-firewall.md           # Phase 2: Published-port bypass & Cloudflare-only DOCKER-USER filter
-        ├── 03-networks-state.md            # Phase 3: Network segmentation & bind-mounted persistent state
-        ├── 04-health-change-cycle.md       # Phase 4: Healthchecks, restart policies & update/rollback cycle
-        └── 05-traefik-ingress.md           # Phase 5: Traefik v3, Origin TLS, middlewares & VPN-only dashboard
+    ├── case-02-container-platform-and-traefik-ingress/
+    │   ├── 00-overview.md                  # S.T.A.R. breakdown, guiding principle & phase index
+    │   ├── 01-srv-layout-docker-engine.md  # Phase 1: /srv production layout & hardened Docker Engine
+    │   ├── 02-docker-firewall.md           # Phase 2: Published-port bypass & Cloudflare-only DOCKER-USER filter
+    │   ├── 03-networks-state.md            # Phase 3: Network segmentation & bind-mounted persistent state
+    │   ├── 04-health-change-cycle.md       # Phase 4: Healthchecks, restart policies & update/rollback cycle
+    │   └── 05-traefik-ingress.md           # Phase 5: Traefik v3, Origin TLS, middlewares & VPN-only dashboard
+    └── case-03-observability-metrics-logs-availability/
+        ├── 00-overview.md                     # S.T.A.R. breakdown, guiding principle & phase index
+        ├── 01-observability-model-access.md   # Phase 1: Signals to watch & the VPN-only access pattern
+        ├── 02-host-and-container-views.md     # Phase 2: Cockpit bound to wg0 & Portainer
+        ├── 03-metrics-netdata.md              # Phase 3: Netdata host & container metrics
+        ├── 04-centralized-logs.md             # Phase 4: Loki, Promtail & Grafana, retention & security queries
+        ├── 05-availability-socket-review.md   # Phase 5: Uptime Kuma & Docker-socket review
+        └── images/                            # Screenshots (sensitive data blurred)
 ```
