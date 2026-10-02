@@ -51,7 +51,7 @@ Most setups skip this step, and the result is predictable:
 
 A fixed layout makes recovery, audits and backups mechanical instead of improvised.
 
-#### 1.2. Why /srv?
+#### 1.2. Why `/srv`?
 The Linux **Filesystem Hierarchy Standard (FHS)** defines `/srv` as the place for data served by the system, which is exactly what self-hosted services are.
 
 | Directory | Purpose (according to FHS) |
