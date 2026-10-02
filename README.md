@@ -1,14 +1,16 @@
 # zero-trust-vps-platform
-### *Cloudflare Edge, Zero-Trust Perimeter, WireGuard S2C, Host Firewall & Hardened Administration*
+### *Cloudflare Edge, Zero-Trust Perimeter, WireGuard S2C, Host Firewall, Segmented Container Platform & Traefik Ingress*
 
 [![Linux](https://img.shields.io/badge/Linux-%20AlmaLinux-E95420?logo=linux&logoColor=white)](#)
 [![Security](https://img.shields.io/badge/Security-Zero--Trust%20Perimeter-success?logo=shield&logoColor=white)](#)
 [![Cloudflare](https://img.shields.io/badge/Edge-Cloudflare%20WAF%20%26%20Proxy-F38020?logo=cloudflare&logoColor=white)](#)
 [![WireGuard](https://img.shields.io/badge/VPN-WireGuard%20S2C-88171A?logo=wireguard&logoColor=white)](#)
+[![Docker](https://img.shields.io/badge/Containers-Docker%20Engine-2496ED?logo=docker&logoColor=white)](#)
+[![Traefik](https://img.shields.io/badge/Ingress-Traefik%20v3-24A1C1?logo=traefikproxy&logoColor=white)](#)
 
 ---
 
-## High-Level Perimeter Architecture Diagram
+## High-Level Architecture Diagram
 
 ```mermaid
 graph TD
@@ -23,7 +25,7 @@ graph TD
     end
 
     subgraph Host_Firewall["Host Firewall Perimeter - iptables & Fail2ban"]
-        FW_CF["ALLOW: Cloudflare IPs Only (Ports 80/443 TCP)"]
+        FW_CF["ALLOW: Cloudflare IPs Only (Ports 80/443 TCP)<br/>INPUT + DOCKER-USER chains"]
         FW_WG["ALLOW: WireGuard (Port 51820 UDP)"]
         FW_DROP["DEFAULT DROP: All Other WAN Inbound Traffic"]
         F2B["Fail2ban: Automated Hostile IP Banning"]
@@ -35,35 +37,47 @@ graph TD
         WG_IF --> SSH
     end
 
-    subgraph Origin_Layer["VPS Origin Platform"]
-        ORIGIN_SSL["Origin CA Certificate (/etc/ssl/cloudflare)"]
+    subgraph Origin_Layer["VPS Origin Platform - Docker"]
+        TRAEFIK["Traefik v3 Ingress<br/>Origin CA TLS 1.2+, Security Headers, Rate Limiting"]
+        APP["Application Containers (proxy network)"]
+        DB["Databases & Caches (internal network, no egress)"]
+        TRAEFIK --> APP --> DB
     end
 
     User -->|HTTPS 443| CF_WAF
     CF_PROXY -->|Strict TLS Proxy| FW_CF
-    FW_CF --> ORIGIN_SSL
+    FW_CF --> TRAEFIK
 
     Attacker -.->|Direct WAN Scan| FW_DROP
     Attacker -.->|Brute Force Attempt| F2B
 
     Admin -->|Encrypted VPN Tunnel| FW_WG
     FW_WG --> WG_IF
+    WG_IF -->|VPN allow-list: Traefik dashboard| TRAEFIK
 ```
 
 ---
 
 ## Controls mapping
 
-This host is built as **defense in depth** with **Zero Trust administration**: the admin path is identity plus VPN, not a public SSH port.
+This host is built as **defense in depth** with **Zero Trust administration**: the admin path is identity plus VPN, not a public SSH port. Case 02 carries the same model into the container platform: nothing is exposed unless it's explicitly declared.
 
-| Implemented | CIS Controls v8 | NIST CSF |
-| --- | --- | --- |
-| Ed25519 SSH, no root, no password auth, scoped sudo | CSC 5–6 Account & Access Control | Protect |
-| WireGuard S2C; SSH only on `10.10.10.0/24` | CSC 12 Network Infrastructure | Protect |
-| iptables Default-DROP; 80/443 only from Cloudflare IPs | CSC 12–13 Network Monitoring and Defense | Protect / Detect |
-| Fail2ban | CSC 8 Audit Log Management, CSC 13 | Detect |
-| Cloudflare Full (Strict) TLS + Origin CA | CSC 3 Data Protection | Protect |
-| Cloudflare WAF, managed rules, rate limiting | CSC 9, CSC 13 | Protect / Detect |
+| Implemented | CIS Controls v8 | NIST CSF | Case |
+| --- | --- | --- | :---: |
+| Ed25519 SSH, no root, no password auth, scoped sudo | CSC 5–6 Account & Access Control | Protect | 01 |
+| WireGuard S2C; SSH only on `10.10.10.0/24` | CSC 12 Network Infrastructure | Protect | 01 |
+| iptables Default-DROP; 80/443 only from Cloudflare IPs | CSC 12–13 Network Monitoring and Defense | Protect / Detect | 01 |
+| Fail2ban | CSC 8 Audit Log Management, CSC 13 | Detect | 01 |
+| Cloudflare Full (Strict) TLS + Origin CA | CSC 3 Data Protection | Protect | 01 |
+| Cloudflare WAF, managed rules, rate limiting | CSC 9, CSC 13 | Protect / Detect | 01 |
+| Hardened Docker daemon (`icc` off, `no-new-privileges`, log rotation, ulimits) | CSC 4 Secure Configuration | Protect | 02 |
+| `DOCKER-USER` filter: published ports accept only Cloudflare on 80/443, fails closed | CSC 12–13 Network Infrastructure, Monitoring and Defense | Protect | 02 |
+| Segmented Docker networks; internal networks without egress; no published DB ports | CSC 12 Network Infrastructure | Protect | 02 |
+| Pinned images from official sources; changelog-gated change cycle with rollback | CSC 2 Software Inventory, CSC 7 Vulnerability Management | Identify / Protect | 02 |
+| Traefik: Origin CA TLS 1.2+, HSTS and security headers, per-client rate limiting | CSC 3 Data Protection, CSC 16 Application Software Security | Protect | 02 |
+| VPN-only admin routers (`ipAllowList`) and split-horizon dashboard | CSC 6 Access Control Management | Protect | 02 |
+| JSON access logs with the real client IP | CSC 8 Audit Log Management | Detect | 02 |
+| Bind-mounted state under `/srv/data`; snapshots before changes | CSC 11 Data Recovery | Recover | 02 |
 
 Governance and NIS2/RJC study notes live in [cybersecurity-officer](https://github.com/gabzaf/cybersecurity-officer), not in this repo.
 
@@ -76,6 +90,7 @@ Each case documents engineering decisions and trade-offs behind this platform fo
 | Case | Focus Area | Key Technologies | Status |
 | :--- | :--- | :--- | :---: |
 | **[Case 01](./cases/case-01-perimeter-foundation-and-zero-trust-admin/00-overview.md)** | VPS Perimeter Foundation & Zero-Trust Administration | Cloudflare Proxy & WAF, WireGuard, iptables, Fail2ban, SSH Hardening | 🟢 Published |
+| **[Case 02](./cases/case-02-container-platform-and-traefik-ingress/00-overview.md)** | Segmented Container Platform & Traefik Ingress | Docker Engine, `DOCKER-USER` filtering, network segmentation, Traefik v3, Origin TLS | 🟢 Published |
 
 ---
 
@@ -85,11 +100,18 @@ Each case documents engineering decisions and trade-offs behind this platform fo
 .
 ├── README.md                          # High-level architecture & case index
 └── cases/
-    └── case-01-perimeter-foundation-and-zero-trust-admin/
-        ├── 00-overview.md             # S.T.A.R. breakdown, architecture & phase index
-        ├── 01-identity-dns.md         # Phase 1: Ed25519 identity, OS baseline & DNS delegation
-        ├── 02-ssh-vpn-hardening.md    # Phase 2: OpenSSH hardening, sudo scoping & WireGuard S2C
-        ├── 03-firewall-monitoring.md  # Phase 3: iptables Default-DROP firewall & Fail2ban
-        ├── 04-cloudflare-tls.md       # Phase 4: Cloudflare Proxy, Origin CA & Full (Strict) SSL
-        └── 05-cloudflare-waf.md       # Phase 5: Cloudflare WAF Custom Rules & Edge Security
+    ├── case-01-perimeter-foundation-and-zero-trust-admin/
+    │   ├── 00-overview.md             # S.T.A.R. breakdown, architecture & phase index
+    │   ├── 01-identity-dns.md         # Phase 1: Ed25519 identity, OS baseline & DNS delegation
+    │   ├── 02-ssh-vpn-hardening.md    # Phase 2: OpenSSH hardening, sudo scoping & WireGuard S2C
+    │   ├── 03-firewall-monitoring.md  # Phase 3: iptables Default-DROP firewall & Fail2ban
+    │   ├── 04-cloudflare-tls.md       # Phase 4: Cloudflare Proxy, Origin CA & Full (Strict) SSL
+    │   └── 05-cloudflare-waf.md       # Phase 5: Cloudflare WAF Custom Rules & Edge Security
+    └── case-02-container-platform-and-traefik-ingress/
+        ├── 00-overview.md                  # S.T.A.R. breakdown, guiding principle & phase index
+        ├── 01-srv-layout-docker-engine.md  # Phase 1: /srv production layout & hardened Docker Engine
+        ├── 02-docker-firewall.md           # Phase 2: Published-port bypass & Cloudflare-only DOCKER-USER filter
+        ├── 03-networks-state.md            # Phase 3: Network segmentation & bind-mounted persistent state
+        ├── 04-health-change-cycle.md       # Phase 4: Healthchecks, restart policies & update/rollback cycle
+        └── 05-traefik-ingress.md           # Phase 5: Traefik v3, Origin TLS, middlewares & VPN-only dashboard
 ```
